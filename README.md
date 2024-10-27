@@ -1,4 +1,4 @@
-# 3_1_reactive
+# 3_1_spring_webflux_coroutines
 
 어렵게 배워서, 쉽게 사용하는 Spring Webflux + Coroutines
 
