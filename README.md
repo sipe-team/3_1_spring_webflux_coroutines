@@ -18,19 +18,29 @@
 - 코드 베이스적인 내용 + CS적인 내용을 함께~ (꼬리에 꼬리를 무어, 계속 계속 딥하게~)
 - 결과적으로 Thread에 대한 깊이 있는 이해를 얻고자 합니다!!
 
-### 어떻게 진행되나요?
+### 일정
 
-- 1주차: Thread 기반 학습, M-threads, Spring MVC 등을 공부해요.
+- 수요일 오후 10시 30분 (1시간 진행)
+- 벌금
+  - 까방권 1회 (그래도 자료 제출은 그날까지 제출하기.)  
+
+
+### 어떻게 진행되나요?
+- 1주차 (동작방식에 대해 깊이 있게 설명, 시범기간...)
+  - Thread, Runnable, Callable, ExecuterService, Async, CompletableFure, ThreadLocal
+  - Atomic (CAS), Syncronized (lock), voilate, FolkJoinPool, BlockingDeque
+  - JVM에서 스레드 동작하는 방식
+  - 컨텍스트 스위칭 비용이란?
+  - 병렬 프로그램시 알아야할 인프라 리소스
+  - 요거하고 피드백 진행!!
+
+- 1주차 ~ 2주차: Thread 기반 학습, M-threads, Spring MVC 등을 공부해요. 
   - 모든 Task는 CPU에 스레드가 올라가며, 동작을 진행합니다. 그렇기 때문에 OS단과 JVM에서의 Thread 동작원리를 같이 공부해요.
-- M-Threads를 대표하는 키워드 스프링 키워드에 대해 공부해요. CompletableFuture, Runnable, Callable, Executor, async 등..
+  - M-Threads를 대표하는 키워드 스프링 키워드에 대해 공부해요. CompletableFuture, Runnable, Callable, Executor, async 등..
   - Spring Tomcat의 스레드로부터, 비즈니스로직에서 사용되는 M-Threads와의 연관성을 같이 공부해요.
-- 2주차: RxJava, Reactor를 공부해요.
-  - Webflux 내부 코드를 까보면, Reactor이고, Reactor를 까보면, RxJava를 Base로 구성되어 있어요.
-  - 그러면, 이런 라이브러리를 사용했을 때, OS Level, JVM Level에서 어떤 변화가 발생할까요?
-- 3주차: Spring Webflux와 Reactor에서 사용되는 스레드 처리를 공부해요.
-  - Webflux와 Reactor를 엮었을 때, peer to peer로 어떻게 동작하는지 동작원리를 확인해요.
-  - Spring MVC + M-Threads -> Spring Webflux + Reactor로 넘어가면서 어떤 변화가 있을까요?
-- 4주차: Corotuines에 대해 공부해요.
+  -   
+  - 
+- 3주차 ~ 4주차: Corotuines에 대해 공부해요.
   - 요즘 유행하는 코루틴.. kotlin-coroutines에 대해 학습해요. (제일 중요한건 동작원리!)
   - 경량 스레드가 무엇일까요? OS와 JVM Level에서 공부해요.
 - 5주차: Spring Webflux + Corotuines에서 사용되는 스레드 처리를 공부해요.
