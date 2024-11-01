@@ -10,6 +10,36 @@
 
 ---
 
+### 팀원
+
+<table align="center">
+    <th align="center">김동건</th>
+    <th align="center">김재영</th>
+    <th align="center">김지헌</th>
+    <th align="center">정준서</th>
+    <th align="center">차윤범</th>
+    <tr>
+        <td align="center">
+            <a href="https://github.com/DongGeon0908"><img src="https://github.com/DongGeon0908.png" width="250"/></a>
+        </td>
+        <td align="center">
+            <a href="https://github.com/jaeyeong951"><img src="https://github.com/jaeyeong951.png" width="250"/></a>
+        </td>
+        <td align="center">
+            <a href="https://github.com/positivehun"><img src="https://github.com/positivehun.png" width="250"/></a>
+        </td>
+        <td align="center">
+            <a href="https://github.com/sunseo18"><img src="https://github.com/sunseo18.png" width="250"/></a>
+        </td>
+        <td align="center">
+            <a href="https://github.com/char-yb"><img src="https://github.com/char-yb.png" width="250"/></a>
+        </td>
+    </tr>
+
+</table>
+
+---
+
 ### 주제
 
 어렵게 배워서, 쉽게 사용하는 Spring Webflux + Coroutines
@@ -49,8 +79,6 @@
   - 모든 Task는 CPU에 스레드가 올라가며, 동작을 진행합니다. 그렇기 때문에 OS단과 JVM에서의 Thread 동작원리를 같이 공부해요.
   - M-Threads를 대표하는 키워드 스프링 키워드에 대해 공부해요. CompletableFuture, Runnable, Callable, Executor, async 등..
   - Spring Tomcat의 스레드로부터, 비즈니스로직에서 사용되는 M-Threads와의 연관성을 같이 공부해요.
-  -   
-  - 
 - 3주차 ~ 4주차: Corotuines에 대해 공부해요.
   - 요즘 유행하는 코루틴.. kotlin-coroutines에 대해 학습해요. (제일 중요한건 동작원리!)
   - 경량 스레드가 무엇일까요? OS와 JVM Level에서 공부해요.
