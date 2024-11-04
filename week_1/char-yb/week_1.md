@@ -7,7 +7,7 @@
 
 --- 
 ## Thread 
-스레드는 프로세스 내에서 실행되는 작은 단위
+스레드는 프로세스 내에서 실행되는 작은 단위.
 독립적으로 실행될 수 있는 코드의 실행 흐름이라 볼 수도 있다.
 JVM 환경에서는 멀티 스레드 환경으로 하나의 프로세스에서 여러 개의 스레드가 존재할 수 있으며, 각 스레드는 동시에 실행된다.
 
@@ -32,7 +32,53 @@ Java에서 java.lang.Thread 클래스를 사용하여 스레드를 생성하게 
 - 다른 스레드의 작업이 끝날 때까지 기다리게 한다.
 - 스레드의 순서를 제어할 때 사용할 수 있다.
 
+
+```kotlin
+public void start() {
+    synchronized (this) {
+        // zero status corresponds to state "NEW".
+        if (holder.threadStatus != 0)
+            throw new IllegalThreadStateException();
+        start0();
+    }
+}
+```
+예제 코드 중에 Thread start 메서드를 까보았다.
+holder? 이게 대체 뭘까??
+
+```kotlin
+// Additional fields for platform threads.
+    // All fields, except task, are accessed directly by the VM.
+    private static class FieldHolder {
+        final ThreadGroup group;
+        final Runnable task;
+        final long stackSize;
+        volatile int priority;
+        volatile boolean daemon;
+        volatile int threadStatus;
+
+        FieldHolder(ThreadGroup group,
+                    Runnable task,
+                    long stackSize,
+                    int priority,
+                    boolean daemon) {
+            this.group = group;
+            this.task = task;
+            this.stackSize = stackSize;
+            this.priority = priority;
+            if (daemon)
+                this.daemon = true;
+        }
+    }
+    private final FieldHolder holder;
+```
+Thread에 대한 FieldHolder 인스턴스가 선언된 것을 볼 수 있다.
+(volatile은 휘발성인 키워드를 의미하는 거 같다.)
+그렇다면 threadStatus가 0인 경우에만 스레드가 실행되는 것을 확인해볼 수 있다.
+
+---
 ## Runnable 
+
 
 
 
