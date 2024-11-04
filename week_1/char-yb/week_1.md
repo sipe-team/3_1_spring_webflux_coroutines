@@ -72,9 +72,30 @@ holder? 이게 대체 뭘까??
     }
     private final FieldHolder holder;
 ```
+스레드는 New, Runnable, Waiting, Timed Waiting, Terminated 5가지 상태가 있다.
+
 Thread에 대한 FieldHolder 인스턴스가 선언된 것을 볼 수 있다.
 (volatile은 휘발성인 키워드를 의미하는 거 같다.)
 그렇다면 threadStatus가 0인 경우에만 스레드가 실행되는 것을 확인해볼 수 있다.
+
+실행 가능한 상태가 아니라면 IllegalThreadStateException 예외를 발생시킨다.
+
+```java 
+private native void start0();
+```
+실행되는 start0는 어떤 메서드인가??
+이 메서드는 JVM에 의해서 호출된다. (native)
+생성된 스레드 객체를 스케줄링이 가능한 상태로 전환하도록 JVM에 지시를 한다.
+
+스케줄링에 의해서 스레드가 선택되면 JVM에 의해 run 메서드가 호출된다.
+내부적으로 run을 호출하고, 스레드의 상태 역시 Runnable로 바뀌게 된다.
+상태가 Runnable로 바뀌기에 start는 1번만 호출 가능하다.
+
+여기서 native란??
+- java native interface (JNI)의 기능
+- java는 JVM 위에서 동작하기에 운영체제에 상관없이 동작 가능하다.
+- 하지만 모든 운영체제의 모든 기능을 JVM이 담지 못하기 위해 이를 위해서 운영 체제의 고유 기능을 java로 해결하는 것이 아닌 운영체제가 구현된 언어 (C / C++)로 해결할 수 있게 만든다.
+
 
 ---
 ## Runnable 
