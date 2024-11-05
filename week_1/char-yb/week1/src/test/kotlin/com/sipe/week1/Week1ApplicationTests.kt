@@ -22,4 +22,15 @@ class Week1ApplicationTests {
 			println("Thread is running")
 		}
 	}
+
+	@Test
+	fun runnable() {
+		val runnable = Runnable {
+			println("Thread: ${Thread.currentThread().name} is running")
+		}
+
+		val thread = Thread(runnable)
+		thread.start()
+		println("Hello: ${Thread.currentThread().name}")
+	}
 }
