@@ -85,6 +85,11 @@ https://lazygyu.github.io/roulette/
   - 병렬 프로그램시 알아야할 인프라 리소스
   - 요거하고 피드백 진행!!
 
+- 2주차
+    - 컨텍스트 스위치 비용 (하드웨어적으로) - 10분
+    - Atomic (CAS), Syncronized (lock), voilate, (FolkJoinPool, BlockingDeque, java.util.concurrent) - 10분
+    - Tomcat 네트워크 요청을 받아서, 스레드를 할당받고, 이게 스프링까지 넘어와서 어떤식으로 스레드가 처리되는지? - 10분
+
 - 1주차 ~ 2주차: Thread 기반 학습, M-threads, Spring MVC 등을 공부해요.
   - 모든 Task는 CPU에 스레드가 올라가며, 동작을 진행합니다. 그렇기 때문에 OS단과 JVM에서의 Thread 동작원리를 같이 공부해요.
   - M-Threads를 대표하는 키워드 스프링 키워드에 대해 공부해요. CompletableFuture, Runnable, Callable, Executor, async 등..
