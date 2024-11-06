@@ -136,18 +136,16 @@ fun runnable() {
 
 ---
 
-
 [ Thread와 Runnable 비교 ]
 Runnable은 익명 객체 및 람다로 사용할 수 있지만, Thread는 별도의 클래스를 만들어야 한다는 점에서 번거롭다. 또한 Java에서는 다중 상속이 불가능하므로 Thread 클래스를 상속받으면 다른 클래스를 상속받을 수 없어서 좋지 않다. 또한 Thread 클래스를 상속받으면 Thread 클래스에 구현된 코드들에 의해 더 많은 자원(메모리와 시간 등)을 필요로 하므로 Runnable이 주로 사용된다.
 
- 
 Ref: https://mangkyu.tistory.com/258 망나니개발자
 
 ## Callable
+
 기존의 Runnable 인터페이스는 결과를 반환할 수 없다는 한계점이 있다.
 반환값을 얻으려면 공용 메모리나 파이프를 사용해야 하는데, 이러한 작업은 번거롭고
 제네릭을 사용해 return 받을 수 있는 `Callable`이 추가되었다.
-
 
 ```kotlin
     @Test
@@ -176,19 +174,242 @@ Ref: https://mangkyu.tistory.com/258 망나니개발자
 ```
 
 ---
+
+## Executor
+
+동시 여러 요청을 처리해야 하는 경우 매번 스레드를 생성하는 것은 비효율적이다. 그래서 스레드를 미리 만들어두고 재사용하기 위한 Thread Pool이 등장하게 되는데, Executor 인터페이스는 스레드 풀의 구현을 위한 인터페이스이다. 이러한 Executor 인터페이스를 간단히 정리하면
+
+- 등록된 작업(Runnable)을 실행하기 위한 인터페이스
+- 작업 등록과 작업 실행 중에서 작업 실행만을 책임진다.
+
+SOLID 원칙 중 I에 해당되는 인터페이스 분리 원칙에 맞는 등록된 작업에 대한 실행만을 수행하는 책임만 존재하며, 존재하는 Runnable을 실행하는 메서드만 가지고 있다.
+
+```java
+public interface Executor {
+
+   void execute(Runnable command);
+
+}
+```
+
+Executor 인터페이스는 개발자들이 해당 작업의 실행과 스레드의 사용 및 스케줄링 등등 다양한 작업에 대한 것들을 벗어나게 도와준다.
+
+```kotlin
+class ExecutorTest {
+
+    @Test
+    fun executorRun() {
+        val runnable = Runnable {
+            // Thread: Test worker
+            println("Thread: ${Thread.currentThread().name}")
+        }
+
+        val executor: Executor = RunExecutor()
+        executor.execute(runnable)
+    }
+
+    class RunExecutor : Executor {
+        override fun execute(command: Runnable) {
+            command.run()
+        }
+    }
+
+    @Test
+    fun executorStart() {
+        val runnable =
+            Runnable { println("Thread: " + Thread.currentThread().name) }
+
+        val executor: Executor = StartExecutor()
+        executor.execute(runnable)
+    }
+
+    class StartExecutor : Executor {
+        override fun execute(command: Runnable) {
+            Thread(command).start()
+        }
+    }
+}
+```
+
+코드에서는 메인 스레드에서 실행되므로 override된 execute 메서드를 start 메서드를 통해 실행하면 된다.
+
+---
+
 ## ExecutorService
 
+ExecutorService는 작업(Runnable, Callable) 등록을 위한 인터페이스이며, ExecutorService는 Executor를 상속받아서 작업에 대한 등록뿐만 아니라 실행을 위한 `책임`도 갖고 있다. 그래서 스레드 풀은 기본적으로 ExecutorService 인터페이스를 구현한다. 대표적으로 ThreadPoolExecutor가 ExecutorService의 구현체인데, ThreadPoolExecutor 내부에 있는 Blocking Queue에 작업들을 등록해둔다.
+
+같은 크기의 스레드 풀이 있다고 가정하면,  각각의 스레드는 작업들을 할당받아 처리하는데, 만약 사용 가능한 스레드가 없다면 작업은 Blocking Queue에서 계속 대기하게 된다. 그러다가 스레드가 작업을 끝내면 다음 작업을 할당받게 되는 것이다.
+- 라이프사이클 관리를 위한 기능들
+- 비동기 작업을 위한 기능들
+
+<br />
+
+#### 라이프사이클 관리를 위한 기능들
+ExecutorService는 Executor의 상태 확인과 작업 종료 등 라이프사이클 관리를 위한 메소드들을 제공하고 있다. 
+ 
+1. shutdown
+- 새로운 작업들을 더 이상 받아들이지 않음
+- 호출 전에 제출된 작업들은 그대로 실행이 끝나고 종료됨(Graceful Shutdown)
+
+
+2. shutdownNow
+- shutdown 기능에 더해 이미 제출된 작업들을 인터럽트시킴
+- 실행을 위해 대기중인 작업 목록(`List<Runnable>`)을 반환함
+
+
+3. isShutdown
+- Executor의 shutdown 여부를 반환함
+
+
+4. isTerminated
+- shutdown 실행 후 모든 작업의 종료 여부를 반환함
+
+5. awaitTermination
+- shutdown 실행 후, 지정한 시간 동안 모든 작업이 종료될 때 까지 대기함
+- 지정한 시간 내에 모든 작업이 종료되었는지 여부를 반환함
+
+#### 비동기 작업을 위한 기능들
+ExecutorService는 Runnable과 Callbale을 작업으로 사용하기 위한 메소드를 제공한다. 동시에 여러 작업들을 실행시키는 메소드도 제공하고 있는데, 비동기 작업의 진행을 추적할 수 있도록 Future를 반환한다. 반환된 Future들은 모두 실행된 것이므로 반환된 isDone은 true이다. 하지만 작업들은 정상적으로 종료되었을 수도 있고, 예외에 의해 종료되었을 수도 있으므로 항상 성공한 것은 아니다. 이러한 ExecutorService가 갖는 비동기 작업을 위한 메소드들을 정리하면 다음과 같다.
+
+1. submit
+- 실행할 작업들을 추가하고, 작업의 상태와 결과를 포함하는 Future를 반환함
+- Future의 get을 호출하면 성공적으로 작업이 완료된 후 결과를 얻을 수 있음
+
+2. invokeAll
+- 모든 결과가 나올 때 까지 대기하는 블로킹 방식의 요청
+- 동시에 주어진 작업들을 모두 실행하고, 전부 끝나면 각각의 상태와 결과를 갖는 `List<Future>`을 반환함
+
+3. invokeAny
+- 가장 빨리 실행된 결과가 나올 때 까지 대기하는 블로킹 방식의 요청
+- 동시에 주어진 작업들을 모두 실행하고, 가장 빨리 완료된 하나의 결과를 Future로 반환받음
+
+
+ExecutorService의 구현체로는 AbstractExecutorService가 있는데, ExecutorService의 메소드들(submit, invokeAll, invokeAny)에 대한 기본 구현들을 제공한다.
+
+```java
+public abstract class AbstractExecutorService implements ExecutorService {
+    public AbstractExecutorService() {}
+
+    public Future<?> submit(Runnable task) {
+        if (task == null) throw new NullPointerException();
+        RunnableFuture<Void> ftask = newTaskFor(task, null);
+        execute(ftask);
+        return ftask;
+    }
+
+    public <T> Future<T> submit(Runnable task, T result) {
+        if (task == null) throw new NullPointerException();
+        RunnableFuture<T> ftask = newTaskFor(task, result);
+        execute(ftask);
+        return ftask;
+    }
+
+    public <T> Future<T> submit(Callable<T> task) {
+        if (task == null) throw new NullPointerException();
+        RunnableFuture<T> ftask = newTaskFor(task);
+        execute(ftask);
+        return ftask;
+    }
+
+    public <T> T invokeAny(Collection<? extends Callable<T>> tasks)
+        throws InterruptedException, ExecutionException {
+        try {
+            return doInvokeAny(tasks, false, 0);
+        } catch (TimeoutException cannotHappen) {
+            assert false;
+            return null;
+        }
+    }
+
+    public <T> T invokeAny(Collection<? extends Callable<T>> tasks,
+                           long timeout, TimeUnit unit)
+        throws InterruptedException, ExecutionException, TimeoutException {
+        return doInvokeAny(tasks, true, unit.toNanos(timeout));
+    }
+
+    public <T> List<Future<T>> invokeAll(Collection<? extends Callable<T>> tasks)
+        throws InterruptedException {
+        if (tasks == null)
+            throw new NullPointerException();
+        ArrayList<Future<T>> futures = new ArrayList<>(tasks.size());
+        try {
+            for (Callable<T> t : tasks) {
+                RunnableFuture<T> f = newTaskFor(t);
+                futures.add(f);
+                execute(f);
+            }
+            for (int i = 0, size = futures.size(); i < size; i++) {
+                Future<T> f = futures.get(i);
+                if (!f.isDone()) {
+                    try { f.get(); }
+                    catch (CancellationException | ExecutionException ignore) {}
+                }
+            }
+            return futures;
+        } catch (Throwable t) {
+            cancelAll(futures);
+            throw t;
+        }
+    }
+
+    public <T> List<Future<T>> invokeAll(Collection<? extends Callable<T>> tasks,
+                                         long timeout, TimeUnit unit)
+        throws InterruptedException {
+        if (tasks == null)
+            throw new NullPointerException();
+        final long nanos = unit.toNanos(timeout);
+        final long deadline = System.nanoTime() + nanos;
+        ArrayList<Future<T>> futures = new ArrayList<>(tasks.size());
+        int j = 0;
+        timedOut: try {
+            for (Callable<T> t : tasks)
+                futures.add(newTaskFor(t));
+
+            final int size = futures.size();
+
+            // Interleave time checks and calls to execute in case
+            // executor doesn't have any/much parallelism.
+            for (int i = 0; i < size; i++) {
+                if (((i == 0) ? nanos : deadline - System.nanoTime()) <= 0L)
+                    break timedOut;
+                execute((Runnable)futures.get(i));
+            }
+
+            for (; j < size; j++) {
+                Future<T> f = futures.get(j);
+                if (!f.isDone()) {
+                    try { f.get(deadline - System.nanoTime(), NANOSECONDS); }
+                    catch (CancellationException | ExecutionException ignore) {}
+                    catch (TimeoutException timedOut) {
+                        break timedOut;
+                    }
+                }
+            }
+            return futures;
+        } catch (Throwable t) {
+            cancelAll(futures);
+            throw t;
+        }
+        // Timed out before all the tasks could be completed; cancel remaining
+        cancelAll(futures, j);
+        return futures;
+    }
+```
+invokeAll은 최대 쓰레드 풀의 크기만큼 작업을 동시에 실행시킨다. 그러므로 쓰레드가 충분하다면 동시에 실행되는 작업들 중에서 가장 오래 걸리는 작업만큼 시간이 소요된다. 하지만 만약 쓰레드가 부족하다면 대기되는 작업들이 발생하므로 가장 오래 걸리는 작업의 시간에 더해 추가 시간이 필요하다.
+
+invokeAny는 가장 빨리 끝난 작업 결과만을 구하므로, 동시에 실행한 작업들 중에서 가장 짧게 걸리는 작업만큼 시간이 걸린다. 또한 가장 빠르게 처리된 작업 외의 나머지 작업들은 완료되지 않았으므로 cancel 처리되며, 작업이 진행되는 동안 작업들이 수정되면 결과가 정의되지 않는다.
+
+이런 점에서 진행되는 작업되는 과정에서 트랜잭션에 대한 격리성이 어긋나면 결과가 정의되지 않기에 정합성이 어긋나지 않을까싶다.
 
 ---
+
 ## Async
 
-
 ---
+
 ## CompletableFure
 
-
 ---
+
 ## ThreadLocal
-
-
-
