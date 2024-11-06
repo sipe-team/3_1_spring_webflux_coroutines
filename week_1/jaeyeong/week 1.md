@@ -50,4 +50,14 @@
 
 ### JVM 에서 스레드를 효율적으로 다루기 위한 방법
 
+- 개인적으로 자바를 사용하면서 스레드를 직접 생성하고 다뤄야하는 상황은 잘 없었다.
+- 보통 기존에 존재하는 여러가지 도구를 활용해서 동시성 로직을 구현하는데, 자바의 모든 동시성 관련 도구는 [여기](https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/package-summary.html)에 담겨있다.
+    
+    ![image.png](res/image%206.png)
+    
+- 이 중 가장 흔히 쓰이는 것 몇가지를 뽑자면 `ExecutorService`, `Future`, `ConcurrentHashMap`, `BlockingQueue` 정도가 되겠다.
+- 이들 각각에 대한 자세한 설명은 다음 주차에 계속
+
 ### JVM 에서 병렬 프로그래밍의 미래
+
+- WIP
