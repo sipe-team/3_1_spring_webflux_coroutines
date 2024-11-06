@@ -395,6 +395,7 @@ public abstract class AbstractExecutorService implements ExecutorService {
         cancelAll(futures, j);
         return futures;
     }
+}
 ```
 invokeAll은 최대 쓰레드 풀의 크기만큼 작업을 동시에 실행시킨다. 그러므로 쓰레드가 충분하다면 동시에 실행되는 작업들 중에서 가장 오래 걸리는 작업만큼 시간이 소요된다. 하지만 만약 쓰레드가 부족하다면 대기되는 작업들이 발생하므로 가장 오래 걸리는 작업의 시간에 더해 추가 시간이 필요하다.
 
@@ -410,6 +411,57 @@ invokeAny는 가장 빨리 끝난 작업 결과만을 구하므로, 동시에 �
 
 
 ## Future
+
+Callable 인터페이스의 구현체인 작업(Task)은 가용 가능한 스레드가 없어서 실행이 미뤄질 수 있고, 작업 시간이 오래 걸릴 수도 있다.
+
+그래서 실행 결과를 바로 받지 못하고 미래의 어느 시점에 얻을 수 있는데, `미래에 완료된 Callable의 반환값`을 구하기 위해 사용되는 것이 Future입니다.
+
+즉, Future는 비동기 작업을 갖고 있어 미래에 실행 결과를 얻도록 도와줍니다.
+이를 위해 비동기 작업의 현재 상태를 확인하고, 기다리며, 결과를 얻는 방법 등을 제공합니다.
+
+Future의 인터페이스를 살펴보며 다음과 같습니다.
+
+```java
+public interface Future<V> {
+
+    boolean cancel(boolean mayInterruptIfRunning);
+
+    boolean isCancelled();
+
+    boolean isDone();
+
+    /**
+     * Waits if necessary for the computation to complete, and then
+     * retrieves its result.
+     *
+     * @return the computed result
+     * @throws CancellationException if the computation was cancelled
+     * @throws ExecutionException if the computation threw an
+     * exception
+     * @throws InterruptedException if the current thread was interrupted
+     * while waiting
+     */
+    V get() throws InterruptedException, ExecutionException;
+
+    /**
+     * Waits if necessary for at most the given time for the computation
+     * to complete, and then retrieves its result, if available.
+     *
+     * @param timeout the maximum time to wait
+     * @param unit the time unit of the timeout argument
+     * @return the computed result
+     * @throws CancellationException if the computation was cancelled
+     * @throws ExecutionException if the computation threw an
+     * exception
+     * @throws InterruptedException if the current thread was interrupted
+     * while waiting
+     * @throws TimeoutException if the wait timed out
+     */
+    V get(long timeout, TimeUnit unit)
+        throws InterruptedException, ExecutionException, TimeoutException;
+}
+```
+여기서 get() 은 blocking 방식으로 결과를 가져오며, 타임아웃 설정이 가능합니다
 
 ---
 
