@@ -60,22 +60,24 @@
 
 - 수요일 오후 10시 30분 (1시간 진행)
 - 벌금
-  - 참여, 자료 제출은 별로 벌금... 각 2만원...  
+  - 참여, 자료 제출은 별로 벌금... 각 2만원...
   - 참여 까방권 1회 (그래도 자료 제출은 그날까지 제출하기.)
   - 수요일 10시까지는 자료 제출하기!
 
 ---
 
 ### 어떻게 진행되나요?
+
 - 1주차 (동작방식에 대해 깊이 있게 설명, 시범기간...)
-  - Thread, Runnable, Callable, ExecuterService, Async, CompletableFure, ThreadLocal
+
+  - Thread, Runnable, Callable, ExecutorService, Async, CompletableFuture, ThreadLocal
   - Atomic (CAS), Syncronized (lock), voilate, FolkJoinPool, BlockingDeque
   - JVM에서 스레드 동작하는 방식
   - 컨텍스트 스위칭 비용이란?
   - 병렬 프로그램시 알아야할 인프라 리소스
   - 요거하고 피드백 진행!!
 
-- 1주차 ~ 2주차: Thread 기반 학습, M-threads, Spring MVC 등을 공부해요. 
+- 1주차 ~ 2주차: Thread 기반 학습, M-threads, Spring MVC 등을 공부해요.
   - 모든 Task는 CPU에 스레드가 올라가며, 동작을 진행합니다. 그렇기 때문에 OS단과 JVM에서의 Thread 동작원리를 같이 공부해요.
   - M-Threads를 대표하는 키워드 스프링 키워드에 대해 공부해요. CompletableFuture, Runnable, Callable, Executor, async 등..
   - Spring Tomcat의 스레드로부터, 비즈니스로직에서 사용되는 M-Threads와의 연관성을 같이 공부해요.
