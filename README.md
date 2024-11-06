@@ -10,6 +10,13 @@
 
 ---
 
+### 발표순서
+
+발표순서 정하기
+https://lazygyu.github.io/roulette/
+
+---
+
 ### 팀원
 
 <table align="center">
