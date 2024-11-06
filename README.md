@@ -70,7 +70,7 @@
 
 - 1주차 (동작방식에 대해 깊이 있게 설명, 시범기간...)
 
-  - Thread, Runnable, Callable, ExecutorService, Async, CompletableFure, ThreadLocal
+  - Thread, Runnable, Callable, ExecutorService, Async, CompletableFuture, ThreadLocal
   - Atomic (CAS), Syncronized (lock), voilate, FolkJoinPool, BlockingDeque
   - JVM에서 스레드 동작하는 방식
   - 컨텍스트 스위칭 비용이란?

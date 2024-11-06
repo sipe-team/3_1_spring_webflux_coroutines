@@ -1,6 +1,6 @@
 ## 1주차
 
-- Thread, Runnable, Callable, ExecutorService, Async, CompletableFure, ThreadLocal
+- Thread, Runnable, Callable, ExecutorService, Async, CompletableFuture, ThreadLocal
 - Atomic (CAS), Syncronized (lock), voilate, FolkJoinPool, BlockingDeque
 
 ---
@@ -408,7 +408,12 @@ invokeAny는 가장 빨리 끝난 작업 결과만을 구하므로, 동시에 �
 
 ---
 
-## CompletableFure
+
+## Future
+
+---
+
+## CompletableFuture
 
 ---
 
