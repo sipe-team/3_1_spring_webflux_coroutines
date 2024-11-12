@@ -150,6 +150,7 @@ Atomic의 메서드들은 CPU가 제공하는 CAS 연산을 활용하여 락 없
 AtomicInteger의 incrementAndGet 메서드는 CAS (Compare-And-Swap) 알고리즘을 사용하여 원자적으로 값을 증가시키는 방식입니다. 이 메서드는 락을 사용하지 않고도 스레드 안전하게 동작할 수 있으며, 내부적으로 Unsafe 클래스의 메서드를 통해 메모리 레벨에서 직접 작업을 수행합니다.
 
 ```java
+    // AtomicInteger 내부 
     public final int incrementAndGet() {
         // U (Unsafe 객체)를 사용하여 현재 값에 1을 더하고, 최종 결과를 반환
         return U.getAndAddInt(this, VALUE, 1) + 1;
@@ -176,7 +177,67 @@ AtomicInteger의 incrementAndGet 메서드는 CAS (Compare-And-Swap) 알고리�
     }
 ```
 
+```kotlin
+
+package com.sipe.week2
+
+import java.util.concurrent.atomic.AtomicInteger
+
+class AtomicExample {
+    private val count = AtomicInteger(0) // AtomicInteger로 원자성을 보장하는 카운트 변수
+
+    // count를 증가시키는 메서드
+    fun increment() {
+        count.incrementAndGet() // CAS를 통해 값을 원자적으로 증가
+    }
+
+    // 현재 count 값을 반환하는 메서드
+    fun getCount(): Int {
+        return count.get()
+    }
+}
+
+fun main() {
+    val example = AtomicExample()
+
+    // 두 개의 스레드 생성, 각각 10000번씩 count를 증가시킴
+    val thread1 = Thread {
+        for (i in 0 until 10000) {
+            example.increment()
+        }
+    }
+
+    val thread2 = Thread {
+        for (i in 0 until 10000) {
+            example.increment()
+        }
+    }
+
+    // 스레드 실행
+    thread1.start()
+    thread2.start()
+
+    // 두 스레드가 작업을 마칠 때까지 대기
+    thread1.join()
+    thread2.join()
+
+    // 최종 count 값 출력
+    println("최종 카운트 값: ${example.getCount()}")
+}
+```
+
+
+**예상한 최종 값**: count가 0부터 시작하여 두 개의 스레드가 각각 10000번씩 incrementAndGet()을 호출하므로, 최종 값은 20000이 되어야 합니다.
+**실제 실행 결과는?**: AtomicInteger의 incrementAndGet 메서드는 원자성을 보장하므로, 최종 값은 항상 20000이 됩니다.
+
+**코드 설명**
+**incrementAndGet 메서드**: incrementAndGet 메서드는 내부적으로 CAS 알고리즘을 사용하여 count 값을 증가시킵니다. 이 메서드는 현재 값을 읽고, 그 값에 1을 더한 후, CAS 연산을 통해 갱신이 성공할 때까지 반복합니다.
+**CAS 알고리즘**: CAS는 Compare-And-Swap의 약자로, 현재 값과 예상 값이 일치할 때만 새로운 값으로 갱신하는 방식입니다. 이 방식은 락을 사용하지 않고도 값의 일관성을 보장할 수 있으며, AtomicInteger의 메서드들이 이러한 방식으로 구현되어 있습니다.
+**성능 이점**: AtomicInteger는 synchronized 락을 사용하지 않기 때문에 여러 스레드가 동시 접근하는 환경에서도 성능이 높습니다. CAS 방식으로 인해 락을 사용하는 것보다 빠르며, 대기 시간이 줄어듭니다.
+
 CAS 알고리즘이란 현재 쓰레드가 존재하는 CPU 의 CacheMemory와 MainMemory에 저장된 값을 비교하여, 일치하는 경우 새로운 값으로 교체하고, 일치하지 않을 경우 기존 교체가 실패되고, 이에 대해 계속 재시도를 하는 방식이다. 이러한 방식은 고성능 환경에서 특히 유리하지만, 반복적인 실패가 발생할 수 있는 상황에서는 성능 저하를 유발할 수도 있습니다.(ABA 이슈라고도 한다)
+
+ABA 문제는 특정 값이 일시적으로 다른 값으로 변경되었다가 원래 값으로 돌아왔을 때 발생하는 문제입니다. 예를 들어, 두 스레드가 count 값을 동시에 수정하려고 할 때 한 스레드가 count 값을 A -> B -> A로 변경하면, 다른 스레드에서는 A -> B로 변경한 것과 구분이 되지 않아 예상치 못한 결과가 발생할 수 있습니다. 이를 해결하기 위해 AtomicStampedReference와 같은 클래스를 사용할 수 있습니다.
 
 ---
 이외에도 ForkJoinPool, BlockingDeque, 그리고 java.util.concurrent 패키지의 여러 클래스들이 동시성을 제어하는데 활용됩니다. 특히 ForkJoinPool은 큰 작업을 분할하여 병렬로 처리하는 데 적합하며, BlockingDeque는 스레드간 안전하게 데이터를 교환할 수 있는 큐 역할을 합니다. java.util.concurrent 패키지의 다양한 동기화 유틸리티는 복잡한 스레드 제어를 쉽게 만들어 줍니다.
