@@ -142,9 +142,41 @@ fun main() {
 ---
 ## Atomic (CAS)
 
-Atomic 클래스는 Compare-And-Swap (CAS) 알고리즘 방식으로 원자성을 제공합니다. Atomic 클래스의 메서드들은 CPU가 제공하는 CAS 연산을 활용하여 락 없이 스레드 안전하게 값을 갱신할 수 있습니다. 대표적인 예로 AtomicInteger 클래스의 incrementAndGet() 메서드는 현재 값을 증가시키고 갱신된 값을 반환하면서도, synchronized 락을 사용하지 않기 때문에 성능상 이점을 제공합니다.
+Atomic 클래스는 Compare-And-Swap (CAS) 알고리즘 방식으로 정말 사전적 의미로 `원자성`을 제공합니다.
+Atomic 변수는 원자성을 보장하는 변수라는 의미로, 기존에 원자성을 보장하였던 synchronized 키워드의 성능 저하 문제를 해결하기위해 고안된 방법이라고 합니다.
 
-CAS는 기존 값과 예상 값을 비교하고, 예상 값과 같을 때에만 새로운 값으로 교체하는 방식입니다. 만약 예상 값이 변경되어 있으면 갱신을 실패하고 다시 시도하는 구조입니다. 이러한 방식은 고성능 환경에서 특히 유리하지만, 반복적인 실패가 발생할 수 있는 상황에서는 성능 저하를 유발할 수도 있습니다.
+Atomic의 메서드들은 CPU가 제공하는 CAS 연산을 활용하여 락 없이 스레드 안전하게 값을 갱신할 수 있습니다. 대표적인 예로 AtomicInteger 클래스의 incrementAndGet() 메서드는 현재 값을 증가시키고 갱신된 값을 반환하면서도, synchronized 락을 사용하지 않기 때문에 성능상 이점을 제공합니다.
+
+AtomicInteger의 incrementAndGet 메서드는 CAS (Compare-And-Swap) 알고리즘을 사용하여 원자적으로 값을 증가시키는 방식입니다. 이 메서드는 락을 사용하지 않고도 스레드 안전하게 동작할 수 있으며, 내부적으로 Unsafe 클래스의 메서드를 통해 메모리 레벨에서 직접 작업을 수행합니다.
+
+```java
+    public final int incrementAndGet() {
+        // U (Unsafe 객체)를 사용하여 현재 값에 1을 더하고, 최종 결과를 반환
+        return U.getAndAddInt(this, VALUE, 1) + 1;
+    }
+
+    @IntrinsicCandidate
+    public final int getAndAddInt(Object o, long offset, int delta) {
+        int v;
+        do {
+            // 현재 값을 읽어옴 (메모리 가시성 보장)
+            v = getIntVolatile(o, offset);
+        } while (!weakCompareAndSetInt(o, offset, v, v + delta));
+        // 값을 읽고 난 후, CAS 연산을 통해 갱신이 성공할 때까지 반복
+        return v;
+    }
+
+    @IntrinsicCandidate
+    public native int getIntVolatile(Object o, long offset);
+
+    // 예상된 값과 실제 값을 비교한 후 일치하면 값을 업데이트하고 true 반환
+    @IntrinsicCandidate
+    public final boolean weakCompareAndSetInt(Object o, long offset, int expected, int x) {
+        return compareAndSetInt(o, offset, expected, x);
+    }
+```
+
+CAS 알고리즘이란 현재 쓰레드가 존재하는 CPU 의 CacheMemory와 MainMemory에 저장된 값을 비교하여, 일치하는 경우 새로운 값으로 교체하고, 일치하지 않을 경우 기존 교체가 실패되고, 이에 대해 계속 재시도를 하는 방식이다. 이러한 방식은 고성능 환경에서 특히 유리하지만, 반복적인 실패가 발생할 수 있는 상황에서는 성능 저하를 유발할 수도 있습니다.(ABA 이슈라고도 한다)
 
 ---
 이외에도 ForkJoinPool, BlockingDeque, 그리고 java.util.concurrent 패키지의 여러 클래스들이 동시성을 제어하는데 활용됩니다. 특히 ForkJoinPool은 큰 작업을 분할하여 병렬로 처리하는 데 적합하며, BlockingDeque는 스레드간 안전하게 데이터를 교환할 수 있는 큐 역할을 합니다. java.util.concurrent 패키지의 다양한 동기화 유틸리티는 복잡한 스레드 제어를 쉽게 만들어 줍니다.
