@@ -1,6 +1,6 @@
 package com.sipe.week2
 
-class Volatile1 {
+class VolatileExample {
     @Volatile
     var count: Int = 0
 
@@ -13,7 +13,7 @@ class Volatile1 {
     companion object {
         @JvmStatic
         fun main(args: Array<String>) {
-            val instance = Volatile1()
+            val instance = VolatileExample()
 
             // Create threads
             val thread1 = Thread { instance.incrementCount() }

@@ -95,8 +95,49 @@ synchronized 키워드는 JVM에서 임계 구역을 설정하여 여러 스레�
 - 인스턴스 락: 인스턴스 메서드에 synchronized 키워드를 사용하여 객체 단위로 락을 거는 방식입니다.
 - 클래스 락: 클래스 메서드에 synchronized 키워드를 사용하여 클래스 단위로 락을 거는 방식입니다.
 
-이 방식의 단점은, 스레드가 락을 기다리는 동안 대기 상태에 놓여 자원 사용에 비효율적일 수 있다는 점입니다. 예를 들어, 긴 작업이 진행 중이면 다른 스레드들이 계속 대기해야 하는 상황이 발생할 수 있습니다.
+이 방식의 단점은, 스레드가 락을 기다리는 동안 대기 상태에 놓여 자원 사용에 비효율적일 수 있다는 점입니다. 이러한 점은 `병목 현상`을 야기할 수 있습니다. 예를 들어, 긴 작업이 진행 중이면 다른 스레드들이 계속 대기해야 하는 상황이 발생할 수 있습니다.
 
+```kotlin
+package com.sipe.week2
+
+class SynchronizedExample {
+    private var count = 0 // 공유 자원
+
+    // synchronized 블록을 사용하여 동기화
+    @Synchronized
+    fun incrementCount() {
+        count++
+    }
+
+    fun getCount(): Int {
+        return count
+    }
+}
+
+fun main() {
+    val example = SynchronizedExample()
+    val thread1 = Thread {
+        for (i in 0 until 10000) {
+            example.incrementCount()
+        }
+    }
+    val thread2 = Thread {
+        for (i in 0 until 10000) {
+            example.incrementCount()
+        }
+    }
+
+    // 두 스레드를 시작하고 종료 대기
+    thread1.start()
+    thread2.start()
+    thread1.join()
+    thread2.join()
+
+    // 최종 카운트 값을 출력
+    println("최종 카운트 값: ${example.getCount()}")
+}
+```
+예시 코드와 같이 원자성을 보장하기에 20000이라는 정상 값이 출력됩니다.
 
 ---
 ## Atomic (CAS)
