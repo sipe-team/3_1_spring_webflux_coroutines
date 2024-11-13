@@ -90,6 +90,19 @@ https://lazygyu.github.io/roulette/
     - Atomic (CAS), Syncronized (lock), voilate, (FolkJoinPool, BlockingDeque, java.util.concurrent) - 10분
     - Tomcat 네트워크 요청을 받아서, 스레드를 할당받고, 이게 스프링까지 넘어와서 어떤식으로 스레드가 처리되는지? - 10분
 
+- 3주차
+    - 코루틴 개념, 코루틴을 왜 쓰는가? - 10분
+        - [코루틴 개념](https://en.wikipedia.org/wiki/Coroutine)
+        - [코루틴 docs](https://kotlinlang.org/docs/coroutines-overview.html#documentation)
+    - 코루틴의 동작원리, 스레드와의 차이  - 10분
+    - 간단 실습? - 10분
+        - api 하나 만드는데, io작업 3개 이상이 있다.
+        - 3개를 동시에 실행시키고, 동시에 완료된 이후에 return하도록 코루틴을 기반으로 구성.
+        - 하나는 스레드 기반으로 해보기~     
+
+- continuation, Dispatchers, async, launch, suspend, coroutineScope, coroutineContext, yield, runBlocking, withContext  - 10분
+    
+
 - 1주차 ~ 2주차: Thread 기반 학습, M-threads, Spring MVC 등을 공부해요.
   - 모든 Task는 CPU에 스레드가 올라가며, 동작을 진행합니다. 그렇기 때문에 OS단과 JVM에서의 Thread 동작원리를 같이 공부해요.
   - M-Threads를 대표하는 키워드 스프링 키워드에 대해 공부해요. CompletableFuture, Runnable, Callable, Executor, async 등..
