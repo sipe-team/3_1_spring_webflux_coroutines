@@ -14,7 +14,7 @@ Kotlin이니까 Ko-인줄 아실테지만, 그러니 Kotlin이 아닌 다른 언
 번역이 어렵죠? `코루틴은 실행을 일시 중지하고 재개할 수 있는 컴퓨터 프로그램 구성 요소로, 협력적 멀티태스킹(비선점적 멀티태스킹)을 위해 서브루틴을 일반화합니다.` 라는 의미로 Ok, 일시 중지하고 재개하고 그러한 내부의 협력을 위한 루틴을 활용한 프로그래밍 기법인 듯합니다?
 하나씩 더 알아보겠습니다.
 
-#### 비선점적 프로그래밍 (Non-Premitive Programming)
+#### 비선점적 프로그래밍 (Non-Preemptive Programming)
 컴퓨터구조에서 많이 들었던 개념인 것 같은데 비선점형은 하나의 태스크가 다른 태스크가 실행 중이어도 프로세서(CPU)를 차지할 수 있다. 반대로 선점형은 하나의 태스크가 다른 태스크가 실행 중이라면 프로세서(CPU)를 차지할 수 없다.
 코루틴은 비선점형 멀티태스킹, 스레드는 선점형 멀티태스킹이다. 그러므로 코루틴은 병행성(=동시성)은 제공하고 병렬성은 제공하지 않는다.
 
@@ -72,7 +72,6 @@ runBlocking의 이름은 이를 실행하는 스레드(이 경우 메인 스레�
 결국 정리하면 CoroutineScope 안에서 1초 뒤 World!를 출력하는 코루틴이 만들어졌고 Hello를 출력하는 코드는 해당 코루틴과 별도로 Main Coroutine에 존재하므로 Hello 다음에 World!가 출력되게 됩니다.
 
 
-### 참고링크
+### 참고 링크
 - https://mochaive.medium.com/coroutine-5119fda3bc65
-- https://tech.wonderwall.kr/articles/coroutinedeepdive/
 - https://kotlinlang.org/docs/coroutines-basics.html#your-first-coroutine
