@@ -49,7 +49,7 @@
 
 ### 코루틴 동작 원리
 
-우선 스레드와의 차이부터 알아보았습니다.
+우선 스레드와의 차이부터 알아보겠습니다.
 스레드와의 차이를 이해하고 동작 과정에 대해 이야기 할 것인데, 예시 코드와 함께 보시는 것이 이해하는 데에 도움이 될 듯하여 스레드와의 차이부터 정의를 해보았습니다.
 
 우선 [기본적인 티켓팅 예제 코드](./week3/src/main/kotlin/com/sipe/week3/TicketingExample.kt) 를 통해서 설명을 드리겠습니다.
@@ -60,6 +60,8 @@
 
 생각보다 코루틴이나 비동기 프로그래밍을 안했을 때 실행되는 서브 루틴이 많습니다.
 만약 비즈니스 로직 내부 루틴들이 실행될 경우 많은 스레드와 로직이 왔다갔다 하는 것을 볼 수 있어요.
+
+---
 
 그렇다면 이번엔 비동기적으로 로직을 변경하여 [변경된 코드](./week3/src/main/kotlin/com/sipe/week3/ThreadExample.kt)를 리뷰해보겠습니다.
 
@@ -83,8 +85,56 @@
 
 코루틴은 os가 스레드들의 작업을 스케줄링 하도록 하지 않고, 서브루틴 간의 상호작용을 통해서 언어적으로 또는 코드 작성자가 직접 작업을 스케줄링 할 수 있도록 합니다.
 
+---
 
+이번엔 코틀린을 사용하기에 코루틴을 사용한 티켓팅 로직을 [변경해본 코드](./week3/src/main/kotlin/com/sipe/week3/CoRoutineExample2.kt)를 리뷰해보겠습니다.
 
+runBlocking은 현재 스레드를 block하는 코루틴을 생성하는 함수입니다.
+runBlocking의 이름은 이를 실행하는 스레드(이 경우 메인 스레드)가 runBlocking { ... } 내부의 모든 코루틴이 실행을 완료할 때까지 호출 기간 동안 차단된다는 것을 의미합니다. 스레드(일반 루틴 세계)는 비용이 많이 드는 리소스이고 이를 차단하는 것은 비효율적이며 종종 바람직하지 않기 때문입니다.
+
+launch 함수는 현재 스레드에 대한 blocking 없이 실행되는 코루틴을 생성합니다. 즉 현재 스레드에 다른 작업을 할당할 수 있습니다.
+
+위 코드에서는 크게 runBlocking, lineUp, playMusic 3개의 coroutine 이 상호작용을 하고 있습니다. runBlocking 은 메인 스레드를 잡고 있으며 작업이 완료될 때까지 프로그램이 종료되지 않도록 합니다. 즉 메인 루틴이 됩니다.
+
+메인 루틴은 lineUp 과 playMusic 이라는 2개의 코루틴을 생성하고 실행합니다. lineUp과 playMusic 은 동시성을 보장하면서 각각의 서브 루틴을 수행합니다. 그 후 메인 루틴에서 lineUp.join() 이라는 함수를 호출합니다. 이는 lineUp 코루틴이 완료될 때까지 현재 루틴을 일시정지 시키고 lineUp 코루틴이 완료가 되면 그 때 루틴을 다시 재개하겠다라는 의미입니다. lineUp 코루틴이 완료가 되면 playMusic 코루틴을 cancel 시키고 ticketing과 takeTheBus를 호출하는 구조입니다. 이를 도식화 해보면 아래 그림과 같습니다.
+
+![routine별로 수행](./images/coroutine_example.png)
+
+위 그림처럼 코루틴을 이용하여 루틴과 루틴간의 관계 정의만을 통해서 동시성이 보장되는 비동기 프로그래밍을 하였습니다. 일반적인 서브루틴과는 다르게 코루틴에서는 비동기적으로 routine을 실행할 수 있었으며 각 루틴에서 실행되는 작업들을 중간에 일시정지(lineUp.join())하고 임의의 시점에 재개할 수 있습니다. 이를 통해 코드는 더 읽기 쉬워졌으며 개발자가 정의한 모든 서브루틴을 같은 context 내에서 (해당 프로그램에서는 main thread) 쉽게 실행할 수 있게 합니다. 이처럼 코루틴은 routine 과 routine 간의 관계를 정의하고 정의된 관계에 따라 스케줄링을 코드 레벨에서 해줌으로서 코드를 좀 더 명확하게 하고 컨텍스트 스위칭 비용을 줄일 수 있게 합니다.
+
+#### GPT의 분석 (전체 동작 설명)
+
+1. 코루틴 스코프 생성 및 코루틴 시작
+
+- runBlocking 스코프 내에서 여러 launch 코루틴이 실행됩니다.
+- lineUp 코루틴이 시작되며, coroutineLinedUp 함수가 호출되고 “lined up”을 출력한 후, 2초 동안 delay로 일시 중단됩니다.
+
+2. 다른 코루틴 병렬 실행
+
+- playMusicWithLinedUp 코루틴이 시작되어, coroutinePlayMusic 함수가 호출됩니다.
+- “play music”을 출력한 후, 500ms마다 “listening..“을 출력하며 무한히 반복됩니다.
+- lineUp.join()을 호출하여 coroutineLinedUp이 완료될 때까지 대기합니다.
+- 이후 playMusicWithLinedUp.cancel()을 호출하여 coroutinePlayMusic의 무한 루프를 중단시킵니다.
+
+3. 다음 단계의 작업
+
+- coroutineTicketing() 함수가 호출되어 “ticketing”을 출력합니다.
+- 이후, waitingBus와 playMusicWithWaitingBus 코루틴이 각각 시작됩니다.
+- waitingBus는 coroutineWaitingTheBus를 실행하여 “waiting the bus”를 출력하고 2초간 대기합니다.
+- playMusicWithWaitingBus는 coroutinePlayMusic을 실행하여 “play music”을 출력한 후, “listening..“을 무한히 출력합니다.
+- waitingBus.join()을 통해 coroutineWaitingTheBus가 완료될 때까지 대기합니다.
+- playMusicWithWaitingBus.cancel()을 호출하여 coroutinePlayMusic의 무한 루프를 중단합니다.
+
+4. 마지막 작업
+
+- coroutineTakeTheBus()가 호출되어 “take the bus”를 출력합니다.
+- 모든 작업이 완료되면 runBlocking 스코프가 종료되고, 프로그램이 종료됩니다.
+
+요약
+
+- Kotlin의 코루틴은 launch와 runBlocking을 통해 비동기적으로 작업을 실행하고 관리할 수 있습니다.
+- delay와 같은 일시 중단 함수는 스레드를 차단하지 않고, 코루틴을 일시 중단하여 효율적으로 시간을 대기합니다.
+- cancel과 join을 사용하여 코루틴의 생명 주기를 제어할 수 있으며, 무한 루프 코루틴에서 delay를 사용하여 취소가 가능하도록 처리할 수 있습니다.
 
 ### 참고 링크
 
