@@ -713,6 +713,7 @@ void thenRun() throws ExecutionException, InterruptedException {
   - 함수형 인터페이스 BiFunction을 파라미터로 받음
 
 각각에 대해 throw하는 경우와 throw하지 않는 경우를 모두 실행시켜보도록 하자. 아래의 @ParameterizedTest는 동일한 테스트를 다른 파라미터로 여러 번 실행할 수 있도록 도와주는데, 실행해보면 throw 여부에 따라 실행 결과가 달라짐을 확인할 수 있다.
+
 ```java
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
@@ -735,7 +736,8 @@ java.lang.IllegalArgumentException: Invalid Argument
 // Thread: ForkJoinPool.commonPool-worker-19
 ```
 
-마찬가지로 handle을 실행해보면  throw 여부에 따라 실행 결과가 달라짐을 확인할 수 있다. 
+마찬가지로 handle을 실행해보면  throw 여부에 따라 실행 결과가 달라짐을 확인할 수 있다.
+
 ```java
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
@@ -758,8 +760,175 @@ java.lang.IllegalArgumentException: Invalid Argument
 
 ```
 
-그 외에도 아직 완료되지 않았으면 get을 바로 호출하고, 실패 시에 주어진 exception을 던지게 하는 completeExceptionally와 강제로 예외를 발생시키는 obtrudeException과 예외적으로 완료되었는지를 반환하는 isCompletedExceptionally 등과 같은 기능들도 있으니, 관련해서는 추가적으로 살펴보도록 하자.
+그 외에도 아직 완료되지 않았으면 get을 바로 호출하고, 실패 시에 주어진 exception을 던지게 하는 completeExceptionally와 강제로 예외를 발생시키는 obtrudeException과 예외적으로 완료되었는지를 반환하는 isCompletedExceptionally 등과 같은 기능들도 있다.
 
 ---
 
 ## ThreadLocal
+
+`ThreadLocal`이란 Java에서 지원하는 Thread safe한 기술로 멀티 스레드 환경에서 각각의 스레드에게 별도의 저장공간을 할당하여 별도의 상태를 갖을 수 있게끔 도와준다. (ThreadLocal은 기본적으로 Thread의 정보를 Key 값으로 하여 값을 저장하는 `Map의 구조(ThreadLocalMap)`를 가지고 있습니다.)
+
+**ThreadLocal이 필요한 이유**
+예를들어 Spring의 tomcat을 보면 매 요청마다 생성해놓은 Thread pool에서 Thread를 할당하여 유저의 요청을 처리하도록 되어있다. 
+여기서 문제가 발생하는데 Spring에서 bean을 등록하게 되면 해당 객체는 단 1개만 만들어져서 모든 Thread가 공유하여 사용하도록 되어있다. 이때 해당 인스턴스의 특정 필드를 모든 Thread가 공유하게 되는 것인데 여기서 Thread 동기화 문제가 발생하게 된다.
+
+**동시성 문제**
+여러 쓰레드가 동시에 같은 인스턴스의 필드 값을 변경하면서 발생하는 문제를 동시성 문제라 한다. 이런 동시성 문제는 여러 쓰레드가 같은 인스턴스의 필드에 접근해야 하기 때문에 트래픽이 적은 상황에서는 확률상 잘 나타나지 않고, 트래픽이 점점 많아질 수 록 자주 발생한다. 특히 Spring Bean처럼 싱글톤 객체의 필드를 변경하며 사용할 때 이러한 동시성 문제를 조심해야 한다.
+
+#### 내부 구현
+
+```java
+public class Thread implements Runnable {
+	//...logics
+	ThreadLocal.ThreadLocalMap threadLocals = null;
+}
+```
+
+```java
+public class ThreadLocal<T> {
+	ThreadLocalMap getMap(Thread t) {
+        return t.threadLocals;
+    }
+
+    void createMap(Thread t, T firstValue) { 
+        t.threadLocals = new ThreadLocalMap(this, firstValue);
+    }
+
+
+    public void set(T value) {
+        Thread t = Thread.currentThread();
+        ThreadLocalMap map = getMap(t); 
+        if (map != null)                                   
+             map.set(this, value);
+        else
+            createMap(t, value);                      
+    }
+
+    public T get() {
+        Thread t = Thread.currentThread();
+        ThreadLocalMap map = getMap(t);
+        if (map != null) {
+            ThreadLocalMap.Entry e = map.getEntry(this);
+            if (e != null) {
+                @SuppressWarnings("unchecked")
+                T result = (T)e.value;
+                return result;
+            }
+        }
+        return setInitialValue();
+    }
+
+
+    public void remove() {
+        ThreadLocalMap m = getMap(Thread.currentThread());
+        if (m != null)
+            m.remove(this);
+   }
+
+	static class ThreadLocalMap {
+		static class Entry extends WeakReference<ThreadLocal<?>> {
+            /** The value associated with this ThreadLocal. */
+            Object value;
+
+            Entry(ThreadLocal<?> k, Object v) {
+                super(k);
+                value = v;
+            }
+        }
+	}
+}
+```
+
+ThreadLocal클래스를 이용해 ThreadLocal 내부의 ThreadLocalMap이라는 클래스를 이용해 key/value로 데이터를 보관하고 있다.
+그리고 ThreadLocal의 get, set등의 메서드들의 원리도 Thread에서 현재 수행중인 thread를 currentThread() 메서드를 통해 꺼낸 뒤 해당 Thread에서 ThreadLocalMap을 찾아 리턴하는 것이다.
+
+
+#### ThreadLocal의 사용 사례
+로그인/회원가입 기능을 개발하다 보면 스프링 시큐리티(Spring Security)에서는 SecurityContextHolder에 SecurityContext 안에 Authentication을 보관하도록 개발할 것이다. 여기서 SecurityContextHolder는 SecurityContext를 저장하는 방식을 전략 패턴으로 유연하게 대응하는데, 이 중 기본 전략이 MODE_THREADLOCAL로 ThreadLocal을 사용하여 SecurityContext를 보관하는 방식이였다.
+
+```java
+public class SecurityContextHolder {
+
+	//...
+    
+    //SecurityContextHolderStrategy 안에 SecurityContext가 보관된다.
+    private static SecurityContextHolderStrategy strategy; 
+    
+	private static void initialize() {
+		if (!StringUtils.hasText(strategyName)) {
+			// Set default
+			strategyName = MODE_THREADLOCAL; //기본 전략이 ThreadLocal을 사용한다.
+		}
+
+		if (strategyName.equals(MODE_THREADLOCAL)) {
+			strategy = new ThreadLocalSecurityContextHolderStrategy();
+		}
+		else if (strategyName.equals(MODE_INHERITABLETHREADLOCAL)) {
+			strategy = new InheritableThreadLocalSecurityContextHolderStrategy();
+		}
+		else if (strategyName.equals(MODE_GLOBAL)) {
+			strategy = new GlobalSecurityContextHolderStrategy();
+		}
+		else {
+			// Try to load a custom strategy
+			try {
+				Class<?> clazz = Class.forName(strategyName);
+				Constructor<?> customStrategy = clazz.getConstructor();
+				strategy = (SecurityContextHolderStrategy) customStrategy.newInstance();
+			}
+			catch (Exception ex) {
+				ReflectionUtils.handleReflectionException(ex);
+			}
+		}
+
+		initializeCount++;
+	}
+}
+
+```
+
+```java
+package org.springframework.security.core.context;
+
+import org.springframework.util.Assert;
+
+final class ThreadLocalSecurityContextHolderStrategy implements SecurityContextHolderStrategy {
+
+	private static final ThreadLocal<SecurityContext> contextHolder = new ThreadLocal<>();
+
+	@Override
+	public void clearContext() {
+		contextHolder.remove();
+	}
+
+	@Override
+	public SecurityContext getContext() {
+		SecurityContext ctx = contextHolder.get();
+		if (ctx == null) {
+			ctx = createEmptyContext();
+			contextHolder.set(ctx);
+		}
+		return ctx;
+	}
+
+	@Override
+	public void setContext(SecurityContext context) {
+		Assert.notNull(context, "Only non-null SecurityContext instances are permitted");
+		contextHolder.set(context);
+	}
+
+	@Override
+	public SecurityContext createEmptyContext() {
+		return new SecurityContextImpl();
+	}
+
+}
+```
+
+SecurityContextHolderStrategy의 구현체중 하나인 ThreadLocalSecurityContextHolderStrategy를 들여다보면 실제로 SecurityContext가 ThreadLocal안에 담겨있는 것을 볼 수 있다.
+
+**ThreadLocal 사용 시 주의점**
+ThreadLocal을 사용할 때 반드시 인지해야할 주의할 점이 있다. 앞서 이야기했듯이 우리가 사용하는 WAS(tomcat)은 Thread pool 기반으로 동작한다. 따라서 ThreadLocal을 사용할 때 사용 후에 비워주지 않는다면 해당 Thread를 부여받게 되는 다른 사용자가 기존에 세팅된 ThreadLocal의 데이터를 공유하게 될 수도 있다.
+
+그렇기에, Thread 의 사용이 끝나는 시점에 Thread Pool에 반환을 하기 직전! `반드시 ThreadLocal을 초기화시켜주는 작업을 해줘야 한다.`
+
