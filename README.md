@@ -100,7 +100,9 @@ https://lazygyu.github.io/roulette/
         - 3개를 동시에 실행시키고, 동시에 완료된 이후에 return하도록 코루틴을 기반으로 구성.
         - 하나는 스레드 기반으로 해보기~     
 
-- continuation, Dispatchers, async, launch, suspend, coroutineScope, coroutineContext, yield, runBlocking, withContext  - 10분
+- 4주차
+  - 다음의 키워드에 대해 학습을 진행 (실습 포함) 
+      - continuation, Dispatchers, async, launch, suspend, coroutineScope, coroutineContext, yield, runBlocking, withContext
     
 
 - 1주차 ~ 2주차: Thread 기반 학습, M-threads, Spring MVC 등을 공부해요.
