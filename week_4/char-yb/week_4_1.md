@@ -37,12 +37,30 @@ suspend fun delayAndPrintHelloCoroutines() {
 ## runBlocking
 
 코루틴을 실행하는 가장 기본적인 방법으로, 코루틴 빌더 중 하나입니다.
+이전까지 예제를 보이면서 launch, async와 같은 비동기 코드를 감싸주는 포장지 같은 역할이다.
 runBlocking은 현재 스레드를 블로킹하며, 내부에서 코루틴을 실행합니다. 테스트 또는 메인 함수에서 간단히 코루틴을 실행할 때 주로 사용됩니다.
+스레드를 블로킹하므로 프로덕션 코드에서는 권장되지 않지만, 진입점에서 코루틴을 실행해야 할 때 유용합니다.
+
+![alt text](image.png)
+
+```kotlin
+fun main() = runBlocking {
+    println("Start") // 즉시 실행
+    delay(5000) // 5초 대기 (코루틴)
+    println("End") // 5초 후 실행
+}
+```
 
 ## launch
 
 새로운 코루틴을 생성하는 빌더로, 반환값이 없는 작업에 적합합니다.
 백그라운드에서 실행되며, Job 객체를 반환합니다.
+
+결과를 반환하지 않는 launch는 결과를 반환하지 않고, launch 수행 시 job이 반환된다.
+
+```kotlin
+val job: Job = launch { println(1) }
+```
 
 ## async
 
