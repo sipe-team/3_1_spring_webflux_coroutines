@@ -269,8 +269,16 @@ launchAB()의 내부가 코루틴 스코프가 되어 launch를 사용할 수 �
 
 ## Continuation
 
-suspend 함수가 중단된 지점에서 작업을 재개하기 위한 상태를 나타냅니다.
-즉, 코루틴에서 일시 중지된 상태를 찾아 객체로 표현.
+Continuation은 코루틴에서 일시 중단된 지점을 재개하기 위한 상태를 관리하는 객체입니다.
+Kotlin에서 suspend 함수는 일시적으로 작업을 중단하고, 특정 조건이 충족되면 다시 재개됩니다. 이 과정에서 현재 작업의 상태(중단된 지점, 지역 변수 값 등)를 유지하고, 나중에 재개할 수 있도록 관리하는 역할을 Continuation이 담당합니다. 일시 중지되거나 그에 따른 상태의 객체를 표현합니다.
+
+```kotlin
+// Continuation 인터페이스
+interface Continuation<in T> {
+    val context: CoroutineContext
+    fun resumeWith(result: Result<T>)
+}
+```
 
 ## CoroutineContext
 
