@@ -103,7 +103,19 @@ https://lazygyu.github.io/roulette/
 - 4주차
   - 다음의 키워드에 대해 학습을 진행 (실습 포함) 
       - continuation, Dispatchers, async, launch, suspend, coroutineScope, coroutineContext, yield, runBlocking, withContext
-    
+
+- 5주차
+  - todo-list 구현해보기, CRUD
+      - todo 생성하기
+      - todo 단건 조회
+      - todo 상태로 조회 (예정, 진행중, 완료), 상태는 index 없이.
+          - equals 비교     
+          - test case를 만드는 api 구성. 5000만건..
+          - throughput -> jmeter
+          - latency -> jmeter
+  - webflux + coroutines 구현해보기!
+  - mvc + virtual thread
+  - throughput and memory, cpu resource 점검...
 
 - 1주차 ~ 2주차: Thread 기반 학습, M-threads, Spring MVC 등을 공부해요.
   - 모든 Task는 CPU에 스레드가 올라가며, 동작을 진행합니다. 그렇기 때문에 OS단과 JVM에서의 Thread 동작원리를 같이 공부해요.
