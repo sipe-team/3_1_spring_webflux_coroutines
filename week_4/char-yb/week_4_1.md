@@ -172,20 +172,105 @@ Dispatcher는 이렇게 Thread Pool 내부에서 쉬고 있는 Thread에게 작�
 
 참고: https://todaycode.tistory.com/182
 
+## yield
+
+사전적 의미로 양보하라라는 의미.
+현재 실행 중인 코루틴 디스패처에서 스레드를 동일한 디스패처에 있는 다른 코루틴에게 실행 권한을 넘겨줍니다.
+Cooperative multitasking을 지원하기 위한 도구로 사용됩니다.
+
+```kotlin
+suspend fun exampleYield() {
+    repeat(5) {
+        println("Working...")
+        yield() // 다른 코루틴에게 실행 권한 양보
+    }
+}
+
+fun main(): Unit = runBlocking {
+    launch {
+        exampleYield()
+    }
+
+    launch {
+        repeat(5) {
+            println("Other task...")
+            delay(200)
+        }
+    }
+}
+```
+
+1. 첫 번째 launch 시작:
+
+- exampleYield가 실행되어 “Working…” 출력.
+
+- 첫 번째 yield() 호출 후 실행 중단, 두 번째 코루틴 실행.
+
+2. 두 번째 launch 실행:
+
+- “Other task…” 출력.
+- elay(200)로 200ms 대기.
+
+3. 첫 번째 launch 재개:
+
+- 두 번째 “Working…” 출력.
+- 시 yield() 호출하여 실행 중단, 두 번째 코루틴 실행.
+
+4. 반복 진행:
+
+- 두 코루틴이 교대로 실행되며 출력이 반복됨.
+
+```
+# 실행 결과
+Working...
+Other task...
+Working...
+Working...
+Working...
+Working...
+Other task...
+Other task...
+Other task...
+Other task...
+```
+
 ## CoroutineScope
 
-코루틴 스코프를 정의하며, 스코프 내의 모든 코루틴이 완료될 때까지 현재 코루틴을 일시 중단합니다.
-스코프 내에서 launch나 async를 안전하게 사용할 수 있습니다.
+CoroutineScope는 코루틴을 생성하고 실행하는 범위를 정의하며 스코프 내의 모든 코루틴이 완료될 때까지 현재 코루틴을 일시 중단합니다. 스코프 내에서 launch나 async를 안전하게 사용할 수 있습니다.
+스코프는 GlobalScope, CoroutineScope가 존재하며
+GlobalScope는 앱의 생명주기와 함께 동작하기 때문에 별도 생명 주기 관리가 필요없으며 앱의 시작부터 종료까지 긴 시간 실행되는 코루틴에 적합합니다. (전역적으로 관리되는 영역에 사용)
+CoroutineScope는 버튼을 눌러 다운로드하거나 서버와 통신한다거나 하는 등의 필요할 때만 시작, 완료되면 종료하는 용도로 사용됩니다. (API 호출 또는 스케줄링?)
+
+이전에 보았던 async, launch도 CoroutineScope의 확장 함수들이다.
+
+```kotlin
+fun main() = runBlocking {
+    launchAB()
+}
+
+private suspend fun launchAB() = coroutineScope {
+    launch {
+        println("launch A Start")
+        delay(1000L)
+        println("launch A End")
+    }
+
+    launch {
+        println("launch B Start")
+        delay(1000L)
+        println("launch B End")
+    }
+    delay(500L)
+    println("Hello World!")
+}
+```
+
+launchAB()의 내부가 코루틴 스코프가 되어 launch를 사용할 수 있게 되었습니다. 이때 launchAB()가 일반 함수인데 runBlocking 대신에 coroutinescope를 사용하려면 launchAB()가 suspend 함수여야 하기 때문입니다. coroutineScope는 코루틴 빌더 중 하나로 코루틴 스코프를 수신 객체로 가지는 suspend 함수입니다. suspend 함수이기 때문에 suspend 함수 내에서만 호출이 가능하고 그래서 launchAB가 suspend 함수여야 하는 것입니다.
 
 ## continuation
 
 suspend 함수가 중단된 지점에서 작업을 재개하기 위한 상태를 나타냅니다.
 Kotlin 내부적으로 관리되며, 개발자가 직접 사용할 일이 거의 없습니다.
-
-## yield
-
-현재 실행 중인 코루틴을 잠시 중단하고 다른 코루틴에게 실행 권한을 넘겨줍니다.
-Cooperative multitasking을 지원하기 위한 도구로 사용됩니다.
 
 ## coroutineContext
 
