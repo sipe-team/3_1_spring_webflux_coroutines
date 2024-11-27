@@ -267,12 +267,31 @@ private suspend fun launchAB() = coroutineScope {
 
 launchAB()의 내부가 코루틴 스코프가 되어 launch를 사용할 수 있게 되었습니다. 이때 launchAB()가 일반 함수인데 runBlocking 대신에 coroutinescope를 사용하려면 launchAB()가 suspend 함수여야 하기 때문입니다. coroutineScope는 코루틴 빌더 중 하나로 코루틴 스코프를 수신 객체로 가지는 suspend 함수입니다. suspend 함수이기 때문에 suspend 함수 내에서만 호출이 가능하고 그래서 launchAB가 suspend 함수여야 하는 것입니다.
 
-## continuation
+## Continuation
 
 suspend 함수가 중단된 지점에서 작업을 재개하기 위한 상태를 나타냅니다.
-Kotlin 내부적으로 관리되며, 개발자가 직접 사용할 일이 거의 없습니다.
+즉, 코루틴에서 일시 중지된 상태를 찾아 객체로 표현.
 
-## coroutineContext
+## CoroutineContext
 
-코루틴의 실행 환경(Dispatcher, Job 등)에 대한 정보를 담고 있는 객체입니다.
+코루틴의 실행 환경(Dispatcher, Job 등)에 대한 정보를 담고 있는 객체입니다. (Key-value로 구성)
 특정 작업에서 컨텍스트를 설정하거나 변경할 때 사용됩니다.
+
+```kotlin
+fun main() {
+    // element 조합
+    CoroutineName("나만의 코루틴") + SupervisorJob()
+    CoroutineName("나만의 코루틴") + Dispatchers.Default
+
+}
+
+suspend fun delayPrintCoroutineContext() {
+    val job = CoroutineScope(Dispatchers.Default).launch {
+        delay(1000)
+        print("Hello")
+        coroutineContext.minusKey(CoroutineName.Key)
+    }
+}
+``` 
+
+## CoroutineDispatcher
