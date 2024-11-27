@@ -1,21 +1,26 @@
 package com.sipe.week4
 
 import kotlinx.coroutines.*
+import kotlin.coroutines.CoroutineContext
 
 class CoroutineContextExample {
+    private val customContext = CoroutineName("나만의 코루틴") + SupervisorJob() + Dispatchers.Default
+
+    fun runExample() {
+        runBlocking(customContext) {
+            delayPrintCoroutineContext(customContext)
+        }
+    }
 }
 
 fun main() {
-    // element 조합
-    CoroutineName("나만의 코루틴") + SupervisorJob()
-    CoroutineName("나만의 코루틴") + Dispatchers.Default
-
+    CoroutineContextExample().runExample()
 }
 
-suspend fun delayPrintCoroutineContext() {
-    val job = CoroutineScope(Dispatchers.Default).launch {
+suspend fun delayPrintCoroutineContext(context: CoroutineContext) {
+    val job = CoroutineScope(context).launch {
         delay(1000)
-        print("Hello")
-        coroutineContext.minusKey(CoroutineName.Key)
+        println("Hello from ${coroutineContext[CoroutineName]}")
     }
+    job.join()
 }
