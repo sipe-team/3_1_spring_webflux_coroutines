@@ -41,7 +41,7 @@ suspend fun delayAndPrintHelloCoroutines() {
 runBlocking은 현재 스레드를 블로킹하며, 내부에서 코루틴을 실행합니다. 테스트 또는 메인 함수에서 간단히 코루틴을 실행할 때 주로 사용됩니다.
 스레드를 블로킹하므로 프로덕션 코드에서는 권장되지 않지만, 진입점에서 코루틴을 실행해야 할 때 유용합니다.
 
-![alt text](image.png)
+![alt text](./images/runblocking_1.png)
 
 ```kotlin
 fun main() = runBlocking {
@@ -65,7 +65,22 @@ val job: Job = launch { println(1) }
 ## async
 
 반환값이 있는 작업을 수행할 때 사용하는 코루틴 빌더입니다.
-Deferred 객체를 반환하며, 결과를 가져오려면 await()를 호출해야 합니다.
+async는 결과를 반환하며 결과값은 Deferred로 감싸서 반환됩니다. Deferred는 미래에 올 수 있는 값을 담아놓을 수 있는 객체입니다. 결과를 가져오려면 await()를 호출해야 합니다.
+
+```kotlin
+fun main() = runBlocking {
+    val deferredInt: Deferred<Int> = async {
+        1 // 마지막 줄 반환
+    }
+    val value = deferredInt.await()
+    println(value) // 1 출력
+}
+```
+
+![alt text](./images/async_1.png)
+
+Deferred<T>의 await()메서드가 수행되면 await을 호출한 코루틴(위의 코드에서는 runBlocking 코루틴)은 결과가 반환되기까지 스레드를 양보하고 대기합니다. 우리는 이를 코루틴이 `일시 중단`되었다고 하며 이러한 특성으로 인해 await() 메서드는 일시 중단이 가능한 코루틴 내부에서만 사용이 가능합니다.
+만약 일반 함수에서 await을 사용하면 일시 중단 함수는 suspend fun(일시중단 함수)에서만 호출될 수 있다는 오류가 발생됩니다.
 
 ## withContext
 
@@ -76,7 +91,7 @@ Deferred 객체를 반환하며, 결과를 가져오려면 await()를 호출해�
 
 코루틴의 실행 스레드를 결정하는 컨텍스트입니다. 대표적인 옵션으로는 Dispatchers.Main, Dispatchers.IO, Dispatchers.Default 등이 있습니다.
 
-## coroutineScope
+## CoroutineScope
 
 코루틴 스코프를 정의하며, 스코프 내의 모든 코루틴이 완료될 때까지 현재 코루틴을 일시 중단합니다.
 스코프 내에서 launch나 async를 안전하게 사용할 수 있습니다.
