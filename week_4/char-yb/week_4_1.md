@@ -59,7 +59,26 @@ fun main() = runBlocking {
 결과를 반환하지 않는 launch는 결과를 반환하지 않고, launch 수행 시 job이 반환된다.
 
 ```kotlin
-val job: Job = launch { println(1) }
+fun main() = runBlocking {
+    println("Start")
+
+    launch {
+        delay(1000) // 1초 대기
+        println("Task 1 completed")
+    }
+
+    launch {
+        delay(500) // 0.5초 대기
+        println("Task 2 completed")
+    }
+
+    println("End")
+    val job: Job = launch { println(1) }
+    job.join()
+    println(2)
+}
+
+
 ```
 
 ## async
@@ -84,12 +103,74 @@ Deferred<T>의 await()메서드가 수행되면 await을 호출한 코루틴(위
 
 ## withContext
 
-코루틴의 실행 컨텍스트(Dispatcher)를 변경할 때 사용됩니다.
-작업 완료를 기다린 후 결과를 반환하며, 보통 suspend 함수 내에서 호출됩니다.
+withContext()는 **기존에 있는 코루틴 영역에서 관리하는 특정 실행 context만 바꾼** 코루틴 영역을 만드는 것입니다. 실제로 suspend 함수이기 때문에 또 다른 suspend 함수에서만 실행할 수 있다는 것이 특징입니다. 보통은 기존에 코루틴 영역이 있는데 Dispatcher와 같은 특정 context element만 바꾸고 싶을 때 사용합니다.
 
-## Dispatchers
+코루틴의 컨텍스트를 변경하여 특정 블록의 코드를 다른 디스패처에서 실행할 수 있습니다.
+입출력 작업(I/O)이나 CPU 집약적인 작업을 다른 디스패처에서 처리하고, 메인 스레드의 부하를 줄일 수 있는데, 주로 입출력 작업(Dispatchers.IO), CPU 집중 작업(Dispatchers.Default), UI 작업(Dispatchers.Main)을 구분할 때 사용됩니다.
+
+```kotlin
+// suspend 함수로 네트워크 작업 시뮬레이션
+suspend fun fetchData(): String {
+    return withContext(Dispatchers.IO) {  // I/O 스레드에서 실행
+        println("Fetching data on: ${Thread.currentThread().name}")
+        delay(3000)  // 네트워크 지연 시뮬레이션
+        "Data from server"
+    }
+}
+
+fun main() = runBlocking {
+    println("Main program starts: ${Thread.currentThread().name}")
+
+    // suspend 함수 호출
+    val data = fetchData()
+    println("Received data: $data")
+
+    println("Main program ends: ${Thread.currentThread().name}")
+}
+```
+
+1. fetchData 함수는 네트워크 작업을 비동기적으로 시뮬레이션하며, 이 작업은 Dispatchers.IO에서 실행됩니다.
+2. fetchData 함수가 완료되면 데이터가 반환되고, 메인 스레드에서 결과를 처리할 수 있습니다.
+
+입출력 작업이나 네트워크 작업을 별도의 스레드에서 처리하고, 그 작업이 끝나면 메인 스레드로 돌아와서 UI(Dispatchers.Main)를 업데이트하는 방식으로 사용됩니다.
+
+참고: https://todaycode.tistory.com/183, https://onlyfor-me-blog.tistory.com/724, https://jinn-blog.tistory.com/194
+
+## Dispatcher
 
 코루틴의 실행 스레드를 결정하는 컨텍스트입니다. 대표적인 옵션으로는 Dispatchers.Main, Dispatchers.IO, Dispatchers.Default 등이 있습니다.
+
+참고로 Thread Pool은 스레드를 정해진 개수만큼 정해놓고 작업 큐에 들어오는 작업들을 하나씩 처리합니다.
+매번 스레드를 생성했다가 지웠다가 하는 게 아니라 일정 개수만큼 만들어 놓는 것입니다.
+
+![alt text](./images/dispatcher_1.png)
+Dispatcher는 이렇게 Thread Pool 내부에서 쉬고 있는 Thread에게 작업을 할당하여
+아래 그림처럼 골고루 부하 상황에 따라 코루틴을 분배한다고 합니다.
+
+![alt text](./images/dispatcher_2.png)
+
+#### Dispatcher의 종류
+
+1. Default
+
+- 리스트를 정렬하거나, Json Parsing 작업 등에 최적화
+- 무거운 연산 작업에 최적화되어 있습니다. (CPU를 많이 사용하는 작업)
+- CPU 개수만큼 스레드를 생성해 작업
+
+2. Main
+
+- 화면 UI 작업을 하기 위해 사용
+
+3. IO
+
+- 네트워크, DB 작업 등에 최적화
+- 읽기, 쓰기 작업에 최적화
+- 스레드를 block 할 필요가 있을 때 사용
+- 기본적으로 최대 64개의 Thread 생성 가능 (Custom 하여 늘릴 수 있다고 합니당)
+
+이렇게 상황에 적합한 Dispatcher를 사용해주면 됩니다.
+
+참고: https://todaycode.tistory.com/182
 
 ## CoroutineScope
 
