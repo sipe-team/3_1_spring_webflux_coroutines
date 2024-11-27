@@ -286,20 +286,30 @@ interface Continuation<in T> {
 특정 작업에서 컨텍스트를 설정하거나 변경할 때 사용됩니다.
 
 ```kotlin
-fun main() {
-    // element 조합
-    CoroutineName("나만의 코루틴") + SupervisorJob()
-    CoroutineName("나만의 코루틴") + Dispatchers.Default
+import kotlinx.coroutines.*
+import kotlin.coroutines.CoroutineContext
 
-}
+class CoroutineContextExample {
+    private val customContext = CoroutineName("나만의 코루틴") + SupervisorJob() + Dispatchers.Default
 
-suspend fun delayPrintCoroutineContext() {
-    val job = CoroutineScope(Dispatchers.Default).launch {
-        delay(1000)
-        print("Hello")
-        coroutineContext.minusKey(CoroutineName.Key)
+    fun runExample() {
+        runBlocking(customContext) {
+            delayPrintCoroutineContext(customContext)
+        }
     }
 }
-``` 
+
+fun main() {
+    CoroutineContextExample().runExample()
+}
+
+suspend fun delayPrintCoroutineContext(context: CoroutineContext) {
+    val job = CoroutineScope(context).launch {
+        delay(1000)
+        println("Hello from ${coroutineContext[CoroutineName]}")
+    }
+    job.join()
+}
+```
 
 ## CoroutineDispatcher
