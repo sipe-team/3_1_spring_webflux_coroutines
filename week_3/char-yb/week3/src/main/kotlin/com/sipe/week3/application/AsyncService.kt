@@ -1,5 +1,6 @@
 package com.sipe.week3.application
 
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
@@ -14,9 +15,9 @@ class AsyncService {
         println("Coroutine tasks started at: ${LocalDateTime.now()}")
 
         // 3개의 I/O 작업을 동시에 실행
-        val task1 = async { ioOperation("Task 1") }
-        val task2 = async { ioOperation("Task 2") }
-        val task3 = async { ioOperation("Task 3") }
+        val task1 = async(Dispatchers.IO) { ioOperation("Task 1") }
+        val task2 = async(Dispatchers.IO) { ioOperation("Task 2") }
+        val task3 = async(Dispatchers.IO) { ioOperation("Task 3") }
 
         // 모든 작업이 완료된 후 결과를 반환
         val result = "${task1.await()}, ${task2.await()}, ${task3.await()}"
