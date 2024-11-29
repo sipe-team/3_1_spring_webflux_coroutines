@@ -22,9 +22,9 @@ enum class ErrorCode(
 	PASSWORD_NOT_MATCHES(HttpStatus.UNAUTHORIZED, "비밀번호가 일치하지 않습니다."),
 	INVALID_AUTH_TOKEN(HttpStatus.UNAUTHORIZED, "토큰 검증에 실패했습니다."),
 
-	// challenge
-	CHALLENGE_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 챌린지를 찾을 수 없습니다."),
-	INVALID_DEPOSIT_AMOUNT(HttpStatus.BAD_REQUEST, "최소 보증금과 최대 보증금 범위를 확인해주세요."),
-	CHALLENGE_ALREADY_APPLIED(HttpStatus.CONFLICT, "이미 신청한 챌린지입니다."),
-	CHALLENGE_IS_NOT_ACTIVE(HttpStatus.BAD_REQUEST, "활성화된 챌린지가 아닙니다."),
+	// Todo
+	TODO_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 Todo를 찾을 수 없습니다."),
+	TODO_ALREADY_COMPLETED(HttpStatus.BAD_REQUEST, "이미 완료된 Todo입니다."),
+	TODO_ALREADY_DELETED(HttpStatus.BAD_REQUEST, "이미 삭제된 Todo입니다."),
+	TODO_ALREADY_EXIST(HttpStatus.CONFLICT, "이미 존재하는 Todo입니다."),
 }

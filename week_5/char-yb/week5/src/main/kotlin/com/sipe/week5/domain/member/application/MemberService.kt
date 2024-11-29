@@ -4,14 +4,14 @@ import com.sipe.week5.domain.member.dto.response.FindOneMemberResponse
 import com.sipe.week5.domain.member.infrastructure.MemberRepository
 import com.sipe.week5.global.exception.CustomException
 import com.sipe.week5.global.exception.ErrorCode
-import com.sipe.week5.global.util.MemberUtil
+import com.sipe.week5.global.util.member.MemberUtil
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
 @Service
 class MemberService(
-	private val memberRepository: MemberRepository,
-	private val memberUtil: MemberUtil,
+    private val memberRepository: MemberRepository,
+    private val memberUtil: MemberUtil,
 ) {
 	@Transactional(readOnly = true)
 	fun findMemberMe(): FindOneMemberResponse {

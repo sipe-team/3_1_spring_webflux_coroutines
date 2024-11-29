@@ -45,7 +45,7 @@ class WebSecurityConfig(
 			.applyCommonConfigurations()
 			.authorizeHttpRequests { authorize ->
 				authorize
-					.requestMatchers("/challenge-actuator/**").permitAll()
+					.requestMatchers("/todo-actuator/**").permitAll()
 					.requestMatchers("/auth/**").permitAll()
 					.anyRequest().authenticated()
 			}

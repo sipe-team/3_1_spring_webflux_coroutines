@@ -1,6 +1,7 @@
 package com.sipe.week5.domain.member.domain
 
 import com.sipe.week5.domain.common.BaseEntity
+import com.sipe.week5.domain.todo.domain.TodoEntity
 import jakarta.persistence.*
 import kotlin.reflect.full.isSubclassOf
 
@@ -16,7 +17,9 @@ class Member(
 	var studyGoal: String? = null,
 	@Enumerated(EnumType.STRING)
 	var role: MemberRole = MemberRole.USER,
-) : BaseEntity() {
+	@OneToMany(mappedBy = "member", fetch = FetchType.LAZY)
+	val todos: MutableList<TodoEntity> = mutableListOf(),
+	) : BaseEntity() {
 	// Proxy 객체 고려하여 equals Override, https://zins.tistory.com/19
 	override fun equals(other: Any?): Boolean {
 		if (this === other) return true

@@ -1,4 +1,4 @@
-package com.sipe.week5.global.util
+package com.sipe.week5.global.util.member
 
 import com.sipe.week5.domain.member.domain.Member
 import com.sipe.week5.domain.member.infrastructure.MemberRepository
