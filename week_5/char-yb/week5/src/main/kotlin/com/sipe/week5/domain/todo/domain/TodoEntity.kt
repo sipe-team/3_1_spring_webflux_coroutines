@@ -1,39 +1,36 @@
 package com.sipe.week5.domain.todo.domain
 
 import com.sipe.week5.domain.common.BaseEntity
-import com.sipe.week5.domain.member.domain.Member
-import jakarta.persistence.*
+import org.springframework.data.annotation.Id
+import org.springframework.data.relational.core.mapping.Column
+import org.springframework.data.relational.core.mapping.Table
 import java.time.LocalDate
-import java.time.LocalDateTime
 import kotlin.reflect.full.isSubclassOf
 
-@Entity
-class TodoEntity (
+@Table("todo")
+class TodoEntity(
 	@Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "todo_id")
-    val id: Long = -1,
+	@Column("todo_id")
+	val id: Long = -1,
 	val title: String,
 	val content: String,
 	val dueDate: LocalDate,
-	@Enumerated(EnumType.STRING)
-    val status: TodoStatus = TodoStatus.TODO,
-
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "member_id")
-	val member: Member,
+	@Column("status")
+	val status: TodoStatus = TodoStatus.TODO,
+	@Column("member_id")
+	val memberId: Long
 ) : BaseEntity() {
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other !is TodoEntity) return false
-        if (!compareClassesIncludeProxy(other)) return false
-        if (id != other.id) return false
-        return true
-    }
+	override fun equals(other: Any?): Boolean {
+		if (this === other) return true
+		if (other !is TodoEntity) return false
+		if (!compareClassesIncludeProxy(other)) return false
+		if (id != other.id) return false
+		return true
+	}
 
-    private fun compareClassesIncludeProxy(other: Any) =
-        this::class.isSubclassOf(other::class) ||
-                other::class.isSubclassOf(this::class)
+	private fun compareClassesIncludeProxy(other: Any) =
+		this::class.isSubclassOf(other::class) ||
+			other::class.isSubclassOf(this::class)
 
-    override fun hashCode(): Int = id.hashCode()
+	override fun hashCode(): Int = id.hashCode()
 }

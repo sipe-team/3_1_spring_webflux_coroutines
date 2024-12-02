@@ -22,7 +22,7 @@ enum class ErrorCode(
 	PASSWORD_NOT_MATCHES(HttpStatus.UNAUTHORIZED, "비밀번호가 일치하지 않습니다."),
 	INVALID_AUTH_TOKEN(HttpStatus.UNAUTHORIZED, "토큰 검증에 실패했습니다."),
 
-	// Todo
+	// TodoEntity
 	TODO_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 Todo를 찾을 수 없습니다."),
 	TODO_ALREADY_COMPLETED(HttpStatus.BAD_REQUEST, "이미 완료된 Todo입니다."),
 	TODO_ALREADY_DELETED(HttpStatus.BAD_REQUEST, "이미 삭제된 Todo입니다."),

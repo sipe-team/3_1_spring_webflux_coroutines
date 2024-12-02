@@ -11,26 +11,26 @@ class TodoController (
 	private val todoService: TodoService
 ) {
 	@PostMapping
-	fun createTodo(
+	suspend fun createTodo(
 		@RequestBody request: CreateTodoRequest
 	): TodoEntity {
 		return todoService.createTodo(request)
 	}
 
 	@GetMapping
-	fun findListTodo(): List<TodoEntity> {
+	suspend fun findListTodo(): List<TodoEntity> {
 		return todoService.findListTodo()
 	}
 
 	@GetMapping("/{todoId}")
-	fun findOneTodo(
+	suspend fun findOneTodo(
 		@PathVariable todoId: Long
 	): TodoEntity {
 		return todoService.findOneTodo(todoId)
 	}
 
 	@GetMapping("/me")
-	fun findByCurrentMemberTodo() {
+	suspend fun findByCurrentMemberTodo() {
 		todoService.findByCurrentMemberTodo()
 	}
 

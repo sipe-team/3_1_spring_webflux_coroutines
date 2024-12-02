@@ -12,5 +12,5 @@ class MemberController(
 	private val memberService: MemberService,
 ) {
 	@GetMapping("/me")
-	fun memberFindMe(): FindOneMemberResponse = memberService.findMemberMe()
+	suspend fun memberFindMe(): FindOneMemberResponse = memberService.findMemberMe()
 }

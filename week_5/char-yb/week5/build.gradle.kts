@@ -21,23 +21,25 @@ repositories {
 }
 
 dependencies {
-    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-webflux")
     implementation("org.springframework.boot:spring-boot-starter-validation")
+    implementation("org.springframework.boot:spring-boot-starter-data-r2dbc")
 
     // kotlin
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("io.projectreactor.kotlin:reactor-kotlin-extensions")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core")
 
     // arrow-kt
     implementation("io.arrow-kt:arrow-core:1.2.4")
     implementation("io.arrow-kt:arrow-fx-coroutines:1.2.4")
     implementation("io.arrow-kt:arrow-fx-stm:1.2.4")
 
-    runtimeOnly("com.h2database:h2")
+    // Database
+    runtimeOnly("io.asyncer:r2dbc-mysql")
     runtimeOnly("com.mysql:mysql-connector-j")
 
     // JWT
@@ -45,7 +47,6 @@ dependencies {
     implementation("io.jsonwebtoken:jjwt-api:$jjwtVersion")
     runtimeOnly("io.jsonwebtoken:jjwt-impl:$jjwtVersion")
     runtimeOnly("io.jsonwebtoken:jjwt-jackson:$jjwtVersion")
-
 
     // Spring Security
     implementation("org.springframework.boot:spring-boot-starter-security")

@@ -21,7 +21,7 @@ class AuthController(
 	): TokenPairResponse = authService.signIn(request)
 
 	@PostMapping("/signUp")
-	fun signUp(
+	suspend fun signUp(
 		@RequestBody request: @Valid SignUpRequest,
 	): TokenPairResponse = authService.signUp(request)
 }
