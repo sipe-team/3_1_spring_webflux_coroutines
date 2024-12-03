@@ -51,7 +51,6 @@ class AuthService(
 			loginId = signUpRequest.loginId,
 			password = passwordEncoder.encode(signUpRequest.password),
 			username = signUpRequest.username,
-			studyGoal = signUpRequest.studyGoal,
 		))
 
 		return getLoginResponse(saveMember)
