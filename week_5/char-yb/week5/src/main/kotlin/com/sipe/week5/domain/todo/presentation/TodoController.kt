@@ -29,9 +29,15 @@ class TodoController (
 		return todoService.findOneTodo(todoId)
 	}
 
+	@GetMapping("/search")
+	suspend fun findTodoByStatus(
+		@RequestParam status: String
+	): List<TodoEntity> {
+		return todoService.findTodoByStatus(status)
+	}
+
 	@GetMapping("/me")
 	suspend fun findByCurrentMemberTodo() {
 		todoService.findByCurrentMemberTodo()
 	}
-
 }
