@@ -3,16 +3,16 @@ package com.sipe.week5.global.config.security
 import com.sipe.week5.domain.auth.dto.TokenType
 import com.sipe.week5.domain.auth.dto.TokenType.ACCESS
 import com.sipe.week5.domain.auth.dto.TokenType.REFRESH
-import com.sipe.week5.domain.auth.exception.AuthenticationExpiredAccessTokenException
-import com.sipe.week5.domain.auth.exception.AuthenticationExpiredRefreshTokenException
 import com.sipe.week5.domain.auth.exception.AuthenticationInvalidTokenException
 import com.sipe.week5.domain.member.domain.Member
+import com.sipe.week5.domain.member.domain.MemberRole
 import com.sipe.week5.global.common.constants.SecurityConstants.TOKEN_ROLE_NAME
 import com.sipe.week5.global.config.properties.JwtProperties
 import io.jsonwebtoken.*
 import io.jsonwebtoken.security.Keys
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.Authentication
+import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.stereotype.Component
 import java.security.Key
 import java.util.*
@@ -26,8 +26,11 @@ class JwtTokenProvider(
 		private const val USER_ID_KEY_NAME = "memberId"
 	}
 
-	private val refreshTokenKey: Key = Keys.secretKeyFor(SignatureAlgorithm.HS256)
-	private val accessTokenKey: Key = Keys.secretKeyFor(SignatureAlgorithm.HS256)
+	private val refreshTokenKey: Key
+		get() = Keys.hmacShaKeyFor(jwtProperties.refreshTokenSecret.toByteArray())
+
+	private val accessTokenKey: Key
+		get() = Keys.hmacShaKeyFor(jwtProperties.accessTokenSecret.toByteArray())
 
 	private fun createTokenHeader(tokenType: TokenType): Map<String, Any> {
 		return mapOf(
@@ -65,28 +68,25 @@ class JwtTokenProvider(
 			throw AuthenticationInvalidTokenException()
 		}
 
-		return UsernamePasswordAuthenticationToken(getMemberId(claims), null, emptyList())
+		val memberId = getMemberId(claims)
+		val userDetails: UserDetails = PrincipalDetails(memberId.toLong(), MemberRole.valueOf(getRole(claims)))
+		return UsernamePasswordAuthenticationToken(userDetails, null, userDetails.authorities)
 	}
 
 	private fun getClaims(
 		token: String,
 		tokenType: String,
 		key: Key,
-	): Jws<Claims> = runCatching { Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token) }
-		.getOrElse {
-			when (it) {
-				is ExpiredJwtException ->
-					when (tokenType) {
-						ACCESS.value -> throw AuthenticationExpiredAccessTokenException()
-						REFRESH.value -> throw AuthenticationExpiredRefreshTokenException()
-						else -> throw AuthenticationInvalidTokenException()
-					}
-				else -> throw AuthenticationInvalidTokenException()
-			}
-		}
+	): Jws<Claims>  {
+		return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token)
+	}
 
 	private fun getTokenType(claims: Jws<Claims>): String =
 		runCatching { claims.header[TOKEN_TYPE_KEY_NAME] as? String? ?: throw AuthenticationInvalidTokenException() }
+			.getOrElse { throw AuthenticationInvalidTokenException() }
+
+	private fun getRole(claims: Jws<Claims>): String =
+		runCatching { claims.body[TOKEN_ROLE_NAME] as? String? ?: throw AuthenticationInvalidTokenException() }
 			.getOrElse { throw AuthenticationInvalidTokenException() }
 
 	private fun getMemberId(claims: Jws<Claims>): String =

@@ -30,7 +30,6 @@ class WebSecurityConfig(
 	fun passwordEncoder(): PasswordEncoder = BCryptPasswordEncoder()
 
 	@Bean
-	@Order(0)
 	fun loginFilterChain(http: HttpSecurity): SecurityFilterChain =
 		http
 			.applyCommonConfigurations()
@@ -39,14 +38,13 @@ class WebSecurityConfig(
 			.build()
 
 	@Bean
-	@Order(1)
 	fun securityFilterChain(http: HttpSecurity): SecurityFilterChain =
 		http
 			.applyCommonConfigurations()
 			.authorizeHttpRequests { authorize ->
 				authorize
 					.requestMatchers("/todo-actuator/**").permitAll()
-					.requestMatchers("/auth/**").permitAll()
+					.requestMatchers("/**").permitAll()
 					.anyRequest().authenticated()
 			}
 			.exceptionHandling {

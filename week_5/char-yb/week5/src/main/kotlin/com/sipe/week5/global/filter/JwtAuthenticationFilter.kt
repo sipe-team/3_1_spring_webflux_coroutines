@@ -1,4 +1,5 @@
 package com.sipe.week5.global.filter
+
 import com.sipe.week5.domain.auth.exception.AuthenticationInvalidTokenException
 import com.sipe.week5.domain.auth.exception.AuthenticationTokenNotExistException
 import com.sipe.week5.global.config.security.JwtTokenProvider
@@ -29,7 +30,7 @@ class JwtAuthenticationFilter(
 
 			val authentication = jwtTokenProvider.parseToken(accessToken)
 			SecurityContextHolder.getContext().authentication = authentication
-			return filterChain.doFilter(request, response)
+			filterChain.doFilter(request, response)
 		} catch (e: Exception) {
 			handlerExceptionResolver.resolveException(request, response, null, e)
 		}
