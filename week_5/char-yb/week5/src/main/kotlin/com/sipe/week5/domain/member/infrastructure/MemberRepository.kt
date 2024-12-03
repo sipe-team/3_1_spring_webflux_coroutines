@@ -8,7 +8,7 @@ import reactor.core.publisher.Mono
 
 @Repository
 interface SuspendableMemberRepository : CoroutineCrudRepository<Member, Long> {
-	fun findByLoginId(loginId: String): Member?
+	suspend fun findByLoginId(loginId: String): Member?
 }
 
 @Repository

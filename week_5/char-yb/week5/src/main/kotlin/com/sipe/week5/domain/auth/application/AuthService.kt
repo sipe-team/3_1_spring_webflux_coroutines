@@ -10,7 +10,6 @@ import com.sipe.week5.global.config.security.JwtTokenProvider
 import com.sipe.week5.global.exception.CustomException
 import com.sipe.week5.global.exception.ErrorCode
 import kotlinx.coroutines.reactor.awaitSingle
-import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -25,8 +24,12 @@ class AuthService(
 ) {
 	suspend fun signIn(signInRequest: SignInRequest): TokenPairResponse {
 		val findMember =
-			reactiveMemberRepository.findByLoginId(signInRequest.loginId)?.awaitSingleOrNull()
-				?: throw CustomException(ErrorCode.MEMBER_ALREADY_REGISTERED)
+			suspendMemberRepository.findByLoginId(signInRequest.loginId)
+				?: throw CustomException(ErrorCode.MEMBER_NOT_FOUND)
+
+//		val findMemberReactive =
+//			reactiveMemberRepository.findByLoginId(signInRequest.loginId)?.awaitSingle()
+//				?: throw CustomException(ErrorCode.MEMBER_NOT_FOUND)
 
 		if (!passwordEncoder.matches(signInRequest.password, findMember.password)) {
 			throw CustomException(ErrorCode.PASSWORD_NOT_MATCHES)
@@ -36,15 +39,20 @@ class AuthService(
 	}
 
 	suspend fun signUp(signUpRequest: SignUpRequest): TokenPairResponse {
-		reactiveMemberRepository.findByLoginId(signUpRequest.loginId)?.awaitSingleOrNull()
-			?: throw CustomException(ErrorCode.MEMBER_ALREADY_REGISTERED)
+		suspendMemberRepository.findByLoginId(signUpRequest.loginId)?.let {
+			throw CustomException(ErrorCode.MEMBER_ALREADY_REGISTERED)
+		}
 
-		val saveMember = reactiveMemberRepository.save(Member(
+//		reactiveMemberRepository.findByLoginId(signUpRequest.loginId)?.awaitSingle()?.let {
+//			throw CustomException(ErrorCode.MEMBER_ALREADY_REGISTERED)
+//		}
+
+		val saveMember = suspendMemberRepository.save(Member(
 			loginId = signUpRequest.loginId,
 			password = passwordEncoder.encode(signUpRequest.password),
 			username = signUpRequest.username,
 			studyGoal = signUpRequest.studyGoal,
-		)).awaitSingle()
+		))
 
 		return getLoginResponse(saveMember)
 	}
