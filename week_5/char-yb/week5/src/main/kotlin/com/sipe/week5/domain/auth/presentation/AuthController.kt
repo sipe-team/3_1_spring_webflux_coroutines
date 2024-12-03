@@ -16,7 +16,7 @@ class AuthController(
 	private val authService: AuthService,
 ) {
 	@PostMapping("/signIn")
-	fun signIn(
+	suspend fun signIn(
 		@RequestBody request: @Valid SignInRequest,
 	): TokenPairResponse = authService.signIn(request)
 

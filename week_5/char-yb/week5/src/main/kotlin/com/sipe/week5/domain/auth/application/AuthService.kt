@@ -23,10 +23,10 @@ class AuthService(
 	private val passwordEncoder: PasswordEncoder,
 	private val jwtTokenProvider: JwtTokenProvider,
 ) {
-	fun signIn(signInRequest: SignInRequest): TokenPairResponse {
+	suspend fun signIn(signInRequest: SignInRequest): TokenPairResponse {
 		val findMember =
-			suspendMemberRepository.findByLoginId(signInRequest.loginId)
-				?: throw CustomException(ErrorCode.MEMBER_NOT_FOUND)
+			reactiveMemberRepository.findByLoginId(signInRequest.loginId)?.awaitSingleOrNull()
+				?: throw CustomException(ErrorCode.MEMBER_ALREADY_REGISTERED)
 
 		if (!passwordEncoder.matches(signInRequest.password, findMember.password)) {
 			throw CustomException(ErrorCode.PASSWORD_NOT_MATCHES)
@@ -36,10 +36,8 @@ class AuthService(
 	}
 
 	suspend fun signUp(signUpRequest: SignUpRequest): TokenPairResponse {
-		val existingMember = reactiveMemberRepository.findByLoginId(signUpRequest.loginId)?.awaitSingleOrNull()
-		if (existingMember != null) {
-			throw CustomException(ErrorCode.MEMBER_ALREADY_REGISTERED)
-		}
+		reactiveMemberRepository.findByLoginId(signUpRequest.loginId)?.awaitSingleOrNull()
+			?: throw CustomException(ErrorCode.MEMBER_ALREADY_REGISTERED)
 
 		val saveMember = reactiveMemberRepository.save(Member(
 			loginId = signUpRequest.loginId,
