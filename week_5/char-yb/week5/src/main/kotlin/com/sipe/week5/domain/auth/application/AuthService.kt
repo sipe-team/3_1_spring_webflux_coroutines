@@ -9,6 +9,8 @@ import com.sipe.week5.domain.member.infrastructure.SuspendableMemberRepository
 import com.sipe.week5.global.config.security.JwtTokenProvider
 import com.sipe.week5.global.exception.CustomException
 import com.sipe.week5.global.exception.ErrorCode
+import kotlinx.coroutines.reactor.awaitSingle
+import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -34,14 +36,17 @@ class AuthService(
 	}
 
 	suspend fun signUp(signUpRequest: SignUpRequest): TokenPairResponse {
-		suspendMemberRepository.findByLoginId(signUpRequest.loginId) ?: throw CustomException(ErrorCode.MEMBER_ALREADY_REGISTERED)
+		val existingMember = reactiveMemberRepository.findByLoginId(signUpRequest.loginId)?.awaitSingleOrNull()
+		if (existingMember != null) {
+			throw CustomException(ErrorCode.MEMBER_ALREADY_REGISTERED)
+		}
 
-		val saveMember: Member = suspendMemberRepository.save(Member(
+		val saveMember = reactiveMemberRepository.save(Member(
 			loginId = signUpRequest.loginId,
 			password = passwordEncoder.encode(signUpRequest.password),
 			username = signUpRequest.username,
 			studyGoal = signUpRequest.studyGoal,
-		))
+		)).awaitSingle()
 
 		return getLoginResponse(saveMember)
 	}

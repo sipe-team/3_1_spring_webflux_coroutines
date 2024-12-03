@@ -11,7 +11,7 @@ import kotlin.reflect.full.isSubclassOf
 class TodoEntity(
 	@Id
 	@Column("todo_id")
-	val id: Long = -1,
+	val id: Long = 0L,
 	val title: String,
 	val content: String,
 	val dueDate: LocalDate,

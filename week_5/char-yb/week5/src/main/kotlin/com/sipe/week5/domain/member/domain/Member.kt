@@ -12,14 +12,12 @@ import kotlin.reflect.full.isSubclassOf
 class Member(
 	@Id
 	@Column("member_id")
-	val id: Long = -1,
+	val id: Long = 0L,
 	val loginId: String,
 	var username: String,
 	var password: String,
 	var studyGoal: String? = null,
 	var role: MemberRole = MemberRole.USER,
-	@MappedCollection(idColumn = "member_id")
-	val todos: MutableList<TodoEntity> = mutableListOf(),
 	) : BaseEntity() {
 	// Proxy 객체 고려하여 equals Override, https://zins.tistory.com/19
 	override fun equals(other: Any?): Boolean {

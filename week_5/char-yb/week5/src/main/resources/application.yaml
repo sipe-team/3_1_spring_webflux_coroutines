@@ -1,5 +1,32 @@
 spring:
   application:
     name: week5
+  # R2DBC 설정
+  r2dbc:
+    url: r2dbc:mysql://${R2DBC_HOST}:${R2DBC_PORT}/${DB_NAME}?useUnicode=true&charset=utf8mb4&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull
+    username: ${R2DBC_USER}
+    password: ${R2DBC_PASSWORD}
+  # R2DBC 연결 풀 설정
+  r2dbc.pool:
+    enabled: true
+    initial-size: 5
+    max-size: 20
+    validation-query: SELECT 1
+  sql:
+    init:
+      mode: always
 
 
+jwt:
+  access-token-secret: ${JWT_ACCESS_TOKEN_SECRET:}
+  refresh-token-secret: ${JWT_REFRESH_TOKEN_SECRET:}
+  access-token-expiration-time: ${JWT_ACCESS_TOKEN_EXPIRATION_TIME:7200}
+  refresh-token-expiration-time: ${JWT_REFRESH_TOKEN_EXPIRATION_TIME:604800}
+
+# LOGGING
+logging:
+  level:
+    root: INFO
+    com.sipe: DEBUG
+    org.springframework.r2dbc: DEBUG
+    reactor.netty.http.client: DEBUG
