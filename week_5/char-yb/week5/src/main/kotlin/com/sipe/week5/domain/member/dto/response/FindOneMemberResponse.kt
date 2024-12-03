@@ -7,7 +7,6 @@ data class FindOneMemberResponse(
 	val id: Long,
 	val username: String,
 	val loginId: String,
-	val studyGoal: String,
 	val role: MemberRole,
 ) {
 	companion object {
@@ -16,7 +15,6 @@ data class FindOneMemberResponse(
 				id = member.id,
 				username = member.username,
 				loginId = member.loginId,
-				studyGoal = member.studyGoal ?: "없음",
 				role = member.role,
 			)
 	}
