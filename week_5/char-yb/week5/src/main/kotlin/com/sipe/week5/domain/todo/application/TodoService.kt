@@ -7,6 +7,7 @@ import com.sipe.week5.domain.todo.infrastructure.SuspendableTodoRepository
 import com.sipe.week5.global.exception.CustomException
 import com.sipe.week5.global.exception.ErrorCode
 import com.sipe.week5.global.util.member.MemberUtil
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.awaitFirst
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -34,11 +35,10 @@ class TodoService (
 		return suspendTodoRepository.findById(todoId) ?: throw CustomException(ErrorCode.TODO_NOT_FOUND)
 	}
 
-
 	// 리스트 조회
 	@Transactional(readOnly = true)
 	suspend fun findListTodo(): List<TodoEntity> {
-		return reactiveTodoRepository.findAll().collectList().awaitFirst()
+		return suspendTodoRepository.findAll().toList()
 	}
 
 	// 현재 사용자의 할 일 조회
@@ -46,5 +46,6 @@ class TodoService (
 	suspend fun findByCurrentMemberTodo() : TodoEntity {
 		val currentMember = memberUtil.getCurrentMember()
 		return suspendTodoRepository.findByMemberId(currentMember.id)
+			?: throw CustomException(ErrorCode.TODO_NOT_FOUND)
 	}
 }
