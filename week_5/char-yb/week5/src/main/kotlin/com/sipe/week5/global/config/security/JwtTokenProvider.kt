@@ -1,7 +1,8 @@
 package com.sipe.week5.global.config.security
 
 import com.sipe.week5.domain.auth.dto.TokenType
-import com.sipe.week5.domain.auth.dto.TokenType.*
+import com.sipe.week5.domain.auth.dto.TokenType.ACCESS
+import com.sipe.week5.domain.auth.dto.TokenType.REFRESH
 import com.sipe.week5.domain.auth.exception.AuthenticationExpiredAccessTokenException
 import com.sipe.week5.domain.auth.exception.AuthenticationExpiredRefreshTokenException
 import com.sipe.week5.domain.auth.exception.AuthenticationInvalidTokenException
@@ -53,27 +54,9 @@ class JwtTokenProvider(
 			.setSubject(member.id.toString())
 			.claim(TOKEN_ROLE_NAME, member.role.name)
 			.claim(USER_ID_KEY_NAME, member.id)
-			.setExpiration(Date(System.currentTimeMillis() + jwtProperties.accessTokenExpirationTime * 1000))
+			.setExpiration(Date(System.currentTimeMillis() + jwtProperties.refreshTokenExpirationTime * 1000))
 			.signWith(refreshTokenKey)
 			.compact()
-
-	fun validateRefreshToken(refreshToken: String) {
-		val claims = getClaims(refreshToken, REFRESH.value, refreshTokenKey)
-
-		if (getTokenType(claims) != REFRESH.value) {
-			throw AuthenticationInvalidTokenException()
-		}
-	}
-
-	fun getMemberIdFromRefreshToken(refreshToken: String): String {
-		val claims = getClaims(refreshToken, REFRESH.value, refreshTokenKey)
-
-		if (getTokenType(claims) != ACCESS.value) {
-			throw AuthenticationInvalidTokenException()
-		}
-
-		return getMemberId(claims)
-	}
 
 	fun parseToken(accessToken: String): Authentication {
 		val claims: Jws<Claims> = getClaims(accessToken, ACCESS.value, accessTokenKey)
@@ -89,16 +72,15 @@ class JwtTokenProvider(
 		token: String,
 		tokenType: String,
 		key: Key,
-	) = runCatching { Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token) }
+	): Jws<Claims> = runCatching { Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token) }
 		.getOrElse {
 			when (it) {
 				is ExpiredJwtException ->
 					when (tokenType) {
-						ACCESS.name -> throw AuthenticationExpiredAccessTokenException()
-						REFRESH.name -> throw AuthenticationExpiredRefreshTokenException()
+						ACCESS.value -> throw AuthenticationExpiredAccessTokenException()
+						REFRESH.value -> throw AuthenticationExpiredRefreshTokenException()
 						else -> throw AuthenticationInvalidTokenException()
 					}
-
 				else -> throw AuthenticationInvalidTokenException()
 			}
 		}
