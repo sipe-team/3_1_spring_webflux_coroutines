@@ -1,0 +1,19 @@
+spring:
+  reactor:
+    netty:
+      worker-count: 4 # WebFlux? ?? ?? ? ??
+
+  r2dbc:
+    url: r2dbc:h2:mem:///testdb;DB_CLOSE_DELAY=-1;MODE=PostgreSQL
+  h2:
+    console:
+      enabled: true
+
+
+server:
+  port: 8080
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
