@@ -15,7 +15,7 @@ class Member(
 	var username: String,
 	var password: String,
 	var role: MemberRole = MemberRole.USER,
-	) : BaseEntity() {
+) : BaseEntity() {
 	// Proxy 객체 고려하여 equals Override, https://zins.tistory.com/19
 	override fun equals(other: Any?): Boolean {
 		if (this === other) return true

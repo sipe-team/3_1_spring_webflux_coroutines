@@ -14,7 +14,6 @@ open class BaseEntity(
 	@Column("created_at")
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", timezone = "Asia/Seoul")
 	var createdAt: LocalDateTime = LocalDateTime.now(),
-
 	/** 수정일 */
 	@LastModifiedDate
 	@Column("modified_at")

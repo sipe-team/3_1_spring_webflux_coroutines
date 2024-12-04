@@ -77,7 +77,7 @@ class JwtTokenProvider(
 		token: String,
 		tokenType: String,
 		key: Key,
-	): Jws<Claims>  {
+	): Jws<Claims> {
 		return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token)
 	}
 

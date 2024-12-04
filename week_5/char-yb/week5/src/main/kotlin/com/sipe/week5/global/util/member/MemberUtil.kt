@@ -10,12 +10,13 @@ import org.springframework.stereotype.Component
 @Component
 class MemberUtil(
 	private val securityUtil: SecurityUtil,
-	private val suspendableMemberRepository: SuspendableMemberRepository
+	private val suspendableMemberRepository: SuspendableMemberRepository,
 ) {
-	suspend fun getCurrentMember(): Member = suspendableMemberRepository
+	suspend fun getCurrentMember(): Member =
+		suspendableMemberRepository
 			.findById(securityUtil.currentMemberId) ?: throw CustomException(ErrorCode.MEMBER_NOT_FOUND)
 
-	suspend fun getMemberByMemberId(memberId: Long): Member = suspendableMemberRepository
+	suspend fun getMemberByMemberId(memberId: Long): Member =
+		suspendableMemberRepository
 			.findById(memberId) ?: throw CustomException(ErrorCode.MEMBER_NOT_FOUND)
-
 }

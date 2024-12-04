@@ -8,10 +8,9 @@ import org.springframework.transaction.annotation.Transactional
 
 @Service
 class MemberService(
-    private val memberRepository: SuspendableMemberRepository,
-    private val memberUtil: MemberUtil,
+	private val memberRepository: SuspendableMemberRepository,
+	private val memberUtil: MemberUtil,
 ) {
 	@Transactional(readOnly = true)
-	suspend fun findMemberMe(): FindOneMemberResponse =
-		FindOneMemberResponse.from(memberUtil.getCurrentMember())
+	suspend fun findMemberMe(): FindOneMemberResponse = FindOneMemberResponse.from(memberUtil.getCurrentMember())
 }

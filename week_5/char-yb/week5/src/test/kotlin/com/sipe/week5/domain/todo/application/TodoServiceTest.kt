@@ -21,7 +21,6 @@ import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.transaction.annotation.Transactional
-import reactor.core.publisher.Flux
 import java.time.LocalDate
 import kotlin.system.measureTimeMillis
 
@@ -38,58 +37,59 @@ class TodoServiceTest
 		private val reactiveTodoRepository: ReactiveTodoRepository,
 		private val passwordEncoder: PasswordEncoder,
 	) {
+		private lateinit var testMember: Member
+		private var todos = mutableListOf<TodoEntity>()
 
-	private lateinit var testMember: Member
-	private var todos = mutableListOf<TodoEntity>()
-
-	@BeforeEach
-	fun setUp() {
-		runBlocking {
-			testMember = suspendableMemberRepository.save(
-				Member(
-					loginId = "test",
-					password = passwordEncoder.encode("test"),
-					username = "test",
-					role = MemberRole.USER,
-				)
-			)
-
-			for (i in 1..50_000_000) {
-				todos.add(
-					TodoEntity(
-						title = "test $i",
-						content = "test $i",
-						dueDate = LocalDate.now(),
-						memberId = testMember.id,
+		@BeforeEach
+		fun setUp() {
+			runBlocking {
+				testMember =
+					suspendableMemberRepository.save(
+						Member(
+							loginId = "test",
+							password = passwordEncoder.encode("test"),
+							username = "test",
+							role = MemberRole.USER,
+						),
 					)
-				)
+
+				for (i in 1..50_000_000) {
+					todos.add(
+						TodoEntity(
+							title = "test $i",
+							content = "test $i",
+							dueDate = LocalDate.now(),
+							memberId = testMember.id,
+						),
+					)
+				}
+				suspendableTodoRepository.saveAll(todos)
+
+				val principalDetails = PrincipalDetails(testMember.id, testMember.role)
+				val authentication: Authentication =
+					UsernamePasswordAuthenticationToken(principalDetails, null, principalDetails.authorities)
+				SecurityContextHolder.getContext().authentication = authentication
 			}
-			suspendableTodoRepository.saveAll(todos)
-
-			val principalDetails = PrincipalDetails(testMember.id, testMember.role)
-			val authentication: Authentication =
-				UsernamePasswordAuthenticationToken(principalDetails, null, principalDetails.authorities)
-			SecurityContextHolder.getContext().authentication = authentication
-		}
-	}
-
-	@Test
-	fun `test performance of suspendableTodoRepository for findTodoByStatus`() = runBlocking {
-		val fetchTime = measureTimeMillis {
-			suspendableTodoRepository.findAllByStatus(TodoStatus.TODO).toList()
 		}
 
-		println("Time taken to fetch records using suspendableTodoRepository: $fetchTime ms")
-	}
+		@Test
+		fun `test performance of suspendableTodoRepository for findTodoByStatus`() =
+			runBlocking {
+				val fetchTime =
+					measureTimeMillis {
+						suspendableTodoRepository.findAllByStatus(TodoStatus.TODO).toList()
+					}
 
-	@Test
-	fun `test performance of reactiveTodoRepository for findTodoByStatus`() {
-		val fetchTime = measureTimeMillis {
-			reactiveTodoRepository.findAllByStatus(TodoStatus.TODO).collectList().block()
+				println("Time taken to fetch records using suspendableTodoRepository: $fetchTime ms")
+			}
+
+		@Test
+		fun `test performance of reactiveTodoRepository for findTodoByStatus`() {
+			val fetchTime =
+				measureTimeMillis {
+					reactiveTodoRepository.findAllByStatus(TodoStatus.TODO).collectList().block()
+				}
+
+			println("Time taken to fetch records using reactiveTodoRepository: $fetchTime ms")
 		}
-
-		println("Time taken to fetch records using reactiveTodoRepository: $fetchTime ms")
 	}
-
-
-}

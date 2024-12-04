@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component
 class SecurityUtil {
 	val currentMemberId: Long
 		get() {
-			val authentication : Authentication = SecurityContextHolder.getContext().authentication
+			val authentication: Authentication = SecurityContextHolder.getContext().authentication
 			try {
 				return authentication.name.toLong()
 			} catch (e: Exception) {

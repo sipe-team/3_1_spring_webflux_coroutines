@@ -1,6 +1,5 @@
 package com.sipe.week5.domain.auth.dto
 
-
 data class TokenPairResponse(
 	val accessToken: String,
 	val refreshToken: String,

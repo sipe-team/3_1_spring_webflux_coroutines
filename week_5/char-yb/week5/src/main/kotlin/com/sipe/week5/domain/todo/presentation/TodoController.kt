@@ -7,12 +7,12 @@ import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/todo")
-class TodoController (
-	private val todoService: TodoService
+class TodoController(
+	private val todoService: TodoService,
 ) {
 	@PostMapping
 	suspend fun createTodo(
-		@RequestBody request: CreateTodoRequest
+		@RequestBody request: CreateTodoRequest,
 	): TodoEntity {
 		return todoService.createTodo(request)
 	}
@@ -24,14 +24,14 @@ class TodoController (
 
 	@GetMapping("/{todoId}")
 	suspend fun findOneTodo(
-		@PathVariable todoId: Long
+		@PathVariable todoId: Long,
 	): TodoEntity {
 		return todoService.findOneTodo(todoId)
 	}
 
 	@GetMapping("/search")
 	suspend fun findTodoByStatus(
-		@RequestParam status: String
+		@RequestParam status: String,
 	): List<TodoEntity> {
 		return todoService.findTodoByStatus(status)
 	}

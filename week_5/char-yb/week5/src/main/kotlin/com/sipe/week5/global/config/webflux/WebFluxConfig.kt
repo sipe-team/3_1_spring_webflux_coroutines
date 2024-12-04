@@ -31,11 +31,12 @@ class WebFluxConfig(
 	}
 
 	override fun configureHttpMessageCodecs(configurer: ServerCodecConfigurer) {
-		val mimeTypes = arrayOf(
-			MimeType("application", "json"),
-			MimeType("application", "*+json"),
-			MimeType("application", "json", Charset.forName("UTF-8"))
-		)
+		val mimeTypes =
+			arrayOf(
+				MimeType("application", "json"),
+				MimeType("application", "*+json"),
+				MimeType("application", "json", Charset.forName("UTF-8")),
+			)
 
 		configurer.defaultCodecs().jackson2JsonEncoder(Jackson2JsonEncoder(objectMapper, *mimeTypes))
 		configurer.defaultCodecs().jackson2JsonDecoder(Jackson2JsonDecoder(objectMapper))
@@ -48,7 +49,7 @@ class WebFluxConfig(
 
 		configurer.addCustomResolver(
 			ReactiveSortHandlerMethodArgumentResolver(),
-			ReactivePageableHandlerMethodArgumentResolver()
+			ReactivePageableHandlerMethodArgumentResolver(),
 		)
 	}
 
@@ -59,4 +60,3 @@ class WebFluxConfig(
 		super.addFormatters(registry)
 	}
 }
-

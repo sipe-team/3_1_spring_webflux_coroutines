@@ -15,43 +15,40 @@ import org.springframework.transaction.annotation.Transactional
 
 @Service
 @Transactional
-class TodoService (
+class TodoService(
 	private val suspendTodoRepository: SuspendableTodoRepository,
 	private val reactiveTodoRepository: ReactiveTodoRepository,
-	private val memberUtil: MemberUtil
+	private val memberUtil: MemberUtil,
 ) {
 	// 생성
 	suspend fun createTodo(request: CreateTodoRequest): TodoEntity {
-		val todo = TodoEntity(
-			title = request.title,
-			content = request.content,
-			dueDate = request.dueDate,
-			memberId = 10L
-		)
+		val todo =
+			TodoEntity(
+				title = request.title,
+				content = request.content,
+				dueDate = request.dueDate,
+				memberId = 10L,
+			)
 		return suspendTodoRepository.save(todo)
 	}
 
 	@Transactional(readOnly = true)
-	suspend fun findOneTodo(todoId: Long): TodoEntity {
-		return suspendTodoRepository.findById(todoId) ?: throw CustomException(ErrorCode.TODO_NOT_FOUND)
-	}
+	suspend fun findOneTodo(todoId: Long): TodoEntity =
+		suspendTodoRepository.findById(todoId) ?: throw CustomException(ErrorCode.TODO_NOT_FOUND)
 
 	// 리스트 조회
 	@Transactional(readOnly = true)
-	suspend fun findListTodo(): List<TodoEntity> {
-		return suspendTodoRepository.findAll().toList()
-	}
+	suspend fun findListTodo(): List<TodoEntity> = suspendTodoRepository.findAll().toList()
 
 	// 현재 사용자의 할 일 조회
 	@Transactional(readOnly = true)
-	suspend fun findByCurrentMemberTodo() : TodoEntity {
+	suspend fun findByCurrentMemberTodo(): TodoEntity {
 		val currentMember = memberUtil.getCurrentMember()
 		return suspendTodoRepository.findByMemberId(10L)
 			?: throw CustomException(ErrorCode.TODO_NOT_FOUND)
 	}
 
 	@Transactional(readOnly = true)
-	suspend fun findTodoByStatus(status: String): List<TodoEntity> {
-		return reactiveTodoRepository.findAllByStatus(TodoStatus.valueOf(status)).collectList().awaitFirst()
-	}
+	suspend fun findTodoByStatus(status: String): List<TodoEntity> =
+		reactiveTodoRepository.findAllByStatus(TodoStatus.valueOf(status)).collectList().awaitFirst()
 }

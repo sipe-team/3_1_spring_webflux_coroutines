@@ -12,4 +12,3 @@ class ReactorSchedulerConfig {
 		return Schedulers.boundedElastic()
 	}
 }
-

@@ -18,7 +18,7 @@ class TodoEntity(
 	@Column("status")
 	val status: TodoStatus = TodoStatus.TODO,
 	@Column("member_id")
-	val memberId: Long
+	val memberId: Long,
 ) : BaseEntity() {
 	override fun equals(other: Any?): Boolean {
 		if (this === other) return true
