@@ -13,31 +13,22 @@ class TodoController(
 	@PostMapping
 	suspend fun createTodo(
 		@RequestBody request: CreateTodoRequest,
-	): TodoEntity {
-		return todoService.createTodo(request)
-	}
+	): TodoEntity = todoService.createTodo(request)
 
 	@GetMapping
-	suspend fun findListTodo(): List<TodoEntity> {
-		return todoService.findListTodo()
-	}
+	suspend fun findListTodo(): List<TodoEntity> = todoService.findListTodo()
 
 	@GetMapping("/{todoId}")
 	suspend fun findOneTodo(
 		@PathVariable todoId: Long,
-	): TodoEntity {
-		return todoService.findOneTodo(todoId)
-	}
+	): TodoEntity? = todoService.findOneTodo(todoId)
 
 	@GetMapping("/search")
 	suspend fun findTodoByStatus(
 		@RequestParam status: String,
-	): List<TodoEntity> {
-		return todoService.findTodoByStatus(status)
-	}
+	): List<TodoEntity> = todoService.findTodoByStatus(status)
 
 	@GetMapping("/me")
-	suspend fun findByCurrentMemberTodo() {
+	suspend fun findByCurrentMemberTodo(): TodoEntity? =
 		todoService.findByCurrentMemberTodo()
-	}
 }
