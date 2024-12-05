@@ -1,0 +1,15 @@
+spring:
+  config:
+    activate:
+      on-profile: "test"
+
+  r2dbc:
+    url: r2dbc:h2:mem:///test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false;MODE=MYSQL
+    username: sa
+    password:
+
+  r2dbc.pool:
+    enabled: true
+    initial-size: 5
+    max-size: 20
+    validation-query: SELECT 1
