@@ -11,9 +11,13 @@ class Member(
 	@Id
 	@Column("member_id")
 	val id: Long = 0L,
+	@Column("login_id")
 	val loginId: String,
+	@Column("username")
 	var username: String,
+	@Column("password")
 	var password: String,
+	@Column("role")
 	var role: MemberRole = MemberRole.USER,
 ) : BaseEntity() {
 	// Proxy 객체 고려하여 equals Override, https://zins.tistory.com/19

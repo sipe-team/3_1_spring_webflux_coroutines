@@ -50,9 +50,10 @@ class TodoService(
 
 	// 리스트 조회
 	@Transactional(readOnly = true)
-	suspend fun findListTodo(): List<TodoEntity> = withContext(Dispatchers.IO) {
-		suspendTodoRepository.findAll().toList()
-	}
+	suspend fun findListTodo(): List<TodoEntity> =
+		withContext(Dispatchers.IO) {
+			suspendTodoRepository.findAll().toList()
+		}
 
 	// 현재 사용자의 할 일 조회
 	@Transactional(readOnly = true)

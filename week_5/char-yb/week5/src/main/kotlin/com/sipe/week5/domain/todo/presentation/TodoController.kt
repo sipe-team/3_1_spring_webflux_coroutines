@@ -29,6 +29,5 @@ class TodoController(
 	): List<TodoEntity> = todoService.findTodoByStatus(status)
 
 	@GetMapping("/me")
-	suspend fun findByCurrentMemberTodo(): TodoEntity? =
-		todoService.findByCurrentMemberTodo()
+	suspend fun findByCurrentMemberTodo(): TodoEntity? = todoService.findByCurrentMemberTodo()
 }

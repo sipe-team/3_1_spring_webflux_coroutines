@@ -14,7 +14,7 @@ spring:
     validation-query: SELECT 1
   sql:
     init:
-      mode: always
+      mode: never  # for production
 
 
 jwt:

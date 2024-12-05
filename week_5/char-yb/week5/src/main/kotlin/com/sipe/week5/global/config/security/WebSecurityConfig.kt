@@ -41,7 +41,7 @@ class WebSecurityConfig(
 
 	@Bean
 	@Order(1)
-	fun securityFilterChain(http: HttpSecurity): SecurityFilterChain  {
+	fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
 		http
 			.applyCommonConfigurations()
 			.authorizeHttpRequests { authorize ->
@@ -51,7 +51,11 @@ class WebSecurityConfig(
 					.anyRequest().authenticated()
 			}
 			.exceptionHandling { exception: ExceptionHandlingConfigurer<HttpSecurity?> ->
-				exception.authenticationEntryPoint { _: HttpServletRequest?, response: HttpServletResponse, _: AuthenticationException? ->
+				exception.authenticationEntryPoint {
+						_: HttpServletRequest?,
+						response: HttpServletResponse,
+						_: AuthenticationException?,
+					->
 					response.status = 401
 				}
 			}
@@ -59,7 +63,7 @@ class WebSecurityConfig(
 		http.addFilterBefore(
 			JwtAuthenticationFilter(jwtTokenProvider, handlerExceptionResolver),
 			UsernamePasswordAuthenticationFilter::class.java,
-			)
+		)
 
 		return http.build()
 	}

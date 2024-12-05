@@ -56,5 +56,3 @@ class JwtAuthenticationFilter(
 		SecurityContextHolder.getContext().authentication = authentication
 	}
 }
-
-
