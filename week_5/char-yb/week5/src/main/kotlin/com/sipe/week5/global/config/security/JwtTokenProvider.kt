@@ -1,8 +1,11 @@
 package com.sipe.week5.global.config.security
 
+import com.sipe.week5.domain.auth.dto.AccessTokenDto
 import com.sipe.week5.domain.auth.dto.TokenType
 import com.sipe.week5.domain.auth.dto.TokenType.ACCESS
 import com.sipe.week5.domain.auth.dto.TokenType.REFRESH
+import com.sipe.week5.domain.auth.exception.AuthenticationExpiredAccessTokenException
+import com.sipe.week5.domain.auth.exception.AuthenticationExpiredRefreshTokenException
 import com.sipe.week5.domain.auth.exception.AuthenticationInvalidTokenException
 import com.sipe.week5.domain.member.domain.Member
 import com.sipe.week5.domain.member.domain.MemberRole
@@ -61,6 +64,30 @@ class JwtTokenProvider(
 			.signWith(refreshTokenKey)
 			.compact()
 
+	@Throws(ExpiredJwtException::class)
+	fun parseAccessToken(token: String): AccessTokenDto {
+		// 토큰 파싱하여 성공하면 AccessTokenDto 반환, 실패하면 null 반환
+		// 만료된 토큰인 경우에만 ExpiredJwtException 발생
+		try {
+			val claims: Jws<Claims> = getClaims(token, accessTokenKey)
+
+			return AccessTokenDto(
+				claims.body.subject.toLong(),
+				MemberRole.valueOf(claims.body.get(TOKEN_ROLE_NAME, String::class.java)),
+				token,
+			)
+		} catch (e: ExpiredJwtException) {
+			throw e
+		}
+	}
+
+	private fun getClaims(
+		token: String,
+		key: Key,
+	): Jws<Claims> {
+		return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token)
+	}
+
 	fun parseToken(accessToken: String): Authentication {
 		val claims: Jws<Claims> = getClaims(accessToken, ACCESS.value, accessTokenKey)
 
@@ -68,18 +95,26 @@ class JwtTokenProvider(
 			throw AuthenticationInvalidTokenException()
 		}
 
-		val memberId = getMemberId(claims)
-		val userDetails: UserDetails = PrincipalDetails(memberId.toLong(), MemberRole.valueOf(getRole(claims)))
-		return UsernamePasswordAuthenticationToken(userDetails, null, userDetails.authorities)
+		return UsernamePasswordAuthenticationToken(getMemberId(claims), null, emptyList())
 	}
 
 	private fun getClaims(
 		token: String,
 		tokenType: String,
 		key: Key,
-	): Jws<Claims> {
-		return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token)
-	}
+	) = runCatching { Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token) }
+		.getOrElse {
+			when (it) {
+				is ExpiredJwtException ->
+					when (tokenType) {
+						ACCESS.name -> throw AuthenticationExpiredAccessTokenException()
+						REFRESH.name -> throw AuthenticationExpiredRefreshTokenException()
+						else -> throw AuthenticationInvalidTokenException()
+					}
+
+				else -> throw AuthenticationInvalidTokenException()
+			}
+		}
 
 	private fun getTokenType(claims: Jws<Claims>): String =
 		runCatching { claims.header[TOKEN_TYPE_KEY_NAME] as? String? ?: throw AuthenticationInvalidTokenException() }

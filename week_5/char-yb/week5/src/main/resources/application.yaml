@@ -1,7 +1,4 @@
 spring:
-  profiles:
-    group:
-      test: "test"
   application:
     name: week5
   # R2DBC 설정

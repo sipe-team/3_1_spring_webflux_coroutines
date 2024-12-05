@@ -1,13 +1,17 @@
 package com.sipe.week5.global.config.security
 import com.sipe.week5.global.filter.JwtAuthenticationFilter
+import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.core.annotation.Order
 import org.springframework.http.HttpHeaders
 import org.springframework.security.config.Customizer.withDefaults
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
+import org.springframework.security.config.annotation.web.configurers.ExceptionHandlingConfigurer
 import org.springframework.security.config.http.SessionCreationPolicy
+import org.springframework.security.core.AuthenticationException
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.web.SecurityFilterChain
@@ -27,31 +31,38 @@ class WebSecurityConfig(
 	fun passwordEncoder(): PasswordEncoder = BCryptPasswordEncoder()
 
 	@Bean
+	@Order(0)
 	fun loginFilterChain(http: HttpSecurity): SecurityFilterChain =
 		http
 			.applyCommonConfigurations()
-			.securityMatcher("/auth/**", "/swagger-ui/**", "/v3/api-docs/**")
+			.securityMatcher("/**", "/swagger-ui/**", "/v3/api-docs/**")
 			.authorizeHttpRequests { it.anyRequest().permitAll() }
 			.build()
 
 	@Bean
-	fun securityFilterChain(http: HttpSecurity): SecurityFilterChain =
+	@Order(1)
+	fun securityFilterChain(http: HttpSecurity): SecurityFilterChain  {
 		http
 			.applyCommonConfigurations()
 			.authorizeHttpRequests { authorize ->
 				authorize
-					.requestMatchers("/todo-actuator/**").permitAll()
-					.requestMatchers("/**").permitAll()
+					.requestMatchers("/auth/signIn").permitAll()
+					.requestMatchers("/auth/signUp").permitAll()
 					.anyRequest().authenticated()
 			}
-			.exceptionHandling {
-				it.authenticationEntryPoint { _, response, _ -> response.status = HttpServletResponse.SC_UNAUTHORIZED }
+			.exceptionHandling { exception: ExceptionHandlingConfigurer<HttpSecurity?> ->
+				exception.authenticationEntryPoint { _: HttpServletRequest?, response: HttpServletResponse, _: AuthenticationException? ->
+					response.status = 401
+				}
 			}
-			.addFilterBefore(
-				JwtAuthenticationFilter(jwtTokenProvider, handlerExceptionResolver),
-				UsernamePasswordAuthenticationFilter::class.java,
+
+		http.addFilterBefore(
+			JwtAuthenticationFilter(jwtTokenProvider, handlerExceptionResolver),
+			UsernamePasswordAuthenticationFilter::class.java,
 			)
-			.build()
+
+		return http.build()
+	}
 
 	@Bean
 	fun corsConfigurationSource(): CorsConfigurationSource {
